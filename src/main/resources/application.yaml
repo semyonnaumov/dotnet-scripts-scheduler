@@ -1,3 +1,25 @@
+scheduler:
+  kafka:
+    broker-url: localhost:8097
+    reconnect-backoff-ms: 100
+    reconnect-backoff-max-ms: 10000
+    jobs-topic-prefix: pending-
+    running-topic-name: running
+    finished-topic-name: finished
+    producer-acks: 1
+    consumer-group: schedulers
+  kafka-admin:
+    broker-url: ${scheduler.kafka.broker-url}
+    reconnect-backoff-ms: ${scheduler.kafka.reconnect-backoff-ms}
+    reconnect-backoff-max-ms: ${scheduler.kafka.reconnect-backoff-max-ms}
+    replication-factor: 2
+    jobs-topics-prefix: ${scheduler.kafka.jobs-topic-prefix}
+    jobs-topics-partitions: 2
+    running-topic-name: ${scheduler.kafka.running-topic-name}
+    running-topic-partitions: 2
+    finished-topic-name: ${scheduler.kafka.finished-topic-name}
+    finished-topic-partitions: 2
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/dotnet-scripts-scheduler
@@ -24,3 +46,7 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+logging:
+  level:
+    com.naumov.dotnetscriptsscheduler: debug

@@ -96,10 +96,10 @@ public class JobsController {
     }
 
     @ExceptionHandler({
+            HttpMessageNotReadableException.class,
             MethodArgumentNotValidException.class,
-            ConstraintViolationException.class,
             MissingServletRequestParameterException.class,
-            HttpMessageNotReadableException.class
+            ConstraintViolationException.class
     })
     public ResponseEntity<DefaultErrorResponse> handleBadRequestExceptions(Exception e) {
         LOGGER.info("Received bad request", e);

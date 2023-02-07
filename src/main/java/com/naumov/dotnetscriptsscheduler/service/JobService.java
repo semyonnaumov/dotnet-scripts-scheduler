@@ -19,4 +19,10 @@ public interface JobService {
     Optional<JobResult> findJobResultByJobId(String jobId);
 
     boolean deleteJob(String id);
+
+    // must be idempotent
+    void onStarted(String jobId);
+
+    // must be idempotent
+    void onFinished(Job job);
 }

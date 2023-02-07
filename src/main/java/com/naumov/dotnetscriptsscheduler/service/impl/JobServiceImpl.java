@@ -5,6 +5,7 @@ import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 import com.naumov.dotnetscriptsscheduler.repository.JobsRepository;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,5 +49,17 @@ public class JobServiceImpl implements JobService {
     @Override
     public boolean deleteJob(String id) {
         return true;
+    }
+
+    @Transactional
+    @Override
+    public void onStarted(String jobId) {
+
+    }
+
+    @Transactional
+    @Override
+    public void onFinished(Job job) {
+
     }
 }
