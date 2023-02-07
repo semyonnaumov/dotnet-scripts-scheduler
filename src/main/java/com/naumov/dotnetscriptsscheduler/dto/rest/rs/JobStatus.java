@@ -1,4 +1,4 @@
-package com.naumov.dotnetscriptsscheduler.dto.rs;
+package com.naumov.dotnetscriptsscheduler.dto.rest.rs;
 
 // PENDING --+--> RUNNING ---> FINISHED
 //           +--> REJECTED

@@ -1,8 +1,8 @@
 package com.naumov.dotnetscriptsscheduler.controller;
 
-import com.naumov.dotnetscriptsscheduler.dto.DtoMapper;
-import com.naumov.dotnetscriptsscheduler.dto.rq.JobCreateRequest;
-import com.naumov.dotnetscriptsscheduler.dto.rs.*;
+import com.naumov.dotnetscriptsscheduler.dto.rest.DtoMapper;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobCreateRequest;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rs.*;
 import com.naumov.dotnetscriptsscheduler.model.Job;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
 import jakarta.validation.ConstraintViolationException;

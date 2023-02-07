@@ -1,8 +1,8 @@
-package com.naumov.dotnetscriptsscheduler.dto;
+package com.naumov.dotnetscriptsscheduler.dto.rest;
 
-import com.naumov.dotnetscriptsscheduler.dto.rq.JobCreateRequest;
-import com.naumov.dotnetscriptsscheduler.dto.rs.JobCreateResponse;
-import com.naumov.dotnetscriptsscheduler.dto.rs.JobGetResponse;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobCreateRequest;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rs.JobCreateResponse;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rs.JobGetResponse;
 import com.naumov.dotnetscriptsscheduler.model.Job;
 import org.springframework.stereotype.Component;
 

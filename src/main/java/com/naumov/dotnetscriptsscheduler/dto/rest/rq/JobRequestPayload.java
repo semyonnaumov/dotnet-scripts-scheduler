@@ -1,4 +1,4 @@
-package com.naumov.dotnetscriptsscheduler.dto.rq;
+package com.naumov.dotnetscriptsscheduler.dto.rest.rq;
 
 import lombok.Data;
 

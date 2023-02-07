@@ -1,4 +1,4 @@
-package com.naumov.dotnetscriptsscheduler.dto.rs;
+package com.naumov.dotnetscriptsscheduler.dto.rest.rs;
 
 import lombok.Builder;
 import lombok.Data;

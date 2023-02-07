@@ -1,4 +1,4 @@
-package com.naumov.dotnetscriptsscheduler.dto.rs;
+package com.naumov.dotnetscriptsscheduler.dto.kafka.cons;
 
 public enum JobCompletionStatus {
     SUCCEEDED,
