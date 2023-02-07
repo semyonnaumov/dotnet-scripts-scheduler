@@ -3,14 +3,14 @@ version: '3.5'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
-    container_name: zookeeper
+    container_name: dss-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
   kafka-broker-1:
     image: confluentinc/cp-kafka:7.3.0
-    container_name: kafka-broker-1
+    container_name: dss-kafka-broker-1
     ports:
       - "8097:8097"
     depends_on:
@@ -27,7 +27,7 @@ services:
 
   kafka-broker-2:
     image: confluentinc/cp-kafka:7.3.0
-    container_name: kafka-broker-2
+    container_name: dss-kafka-broker-2
     ports:
       - "8098:8098"
     depends_on:
@@ -43,8 +43,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
 
   postgres:
-    container_name: postgres
-    image: postgres
+    container_name: dss-postgres
+    image: postgres:15.1
     environment:
       POSTGRES_USER: dotnet-scripts-scheduler
       POSTGRES_PASSWORD: 1234
@@ -53,29 +53,7 @@ services:
       - postgres:/data/postgres
     ports:
       - "5432:5432"
-    networks:
-      - postgres
     restart: unless-stopped
-
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-    ports:
-      - "5050:80"
-    networks:
-      - postgres
-    restart: unless-stopped
-
-networks:
-  postgres:
-    driver: bridge
 
 volumes:
   postgres:
-  pgadmin:
