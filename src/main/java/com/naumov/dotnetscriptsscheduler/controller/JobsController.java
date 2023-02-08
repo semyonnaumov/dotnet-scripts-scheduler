@@ -1,6 +1,6 @@
 package com.naumov.dotnetscriptsscheduler.controller;
 
-import com.naumov.dotnetscriptsscheduler.dto.rest.DtoMapper;
+import com.naumov.dotnetscriptsscheduler.dto.rest.RestDtoMapper;
 import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobCreateRequest;
 import com.naumov.dotnetscriptsscheduler.dto.rest.rs.*;
 import com.naumov.dotnetscriptsscheduler.model.Job;
@@ -29,12 +29,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class JobsController {
     private static final Logger LOGGER = LogManager.getLogger(JobsController.class);
     private final JobService jobService;
-    private final DtoMapper dtoMapper;
+    private final RestDtoMapper dtoMapper;
 
     @Autowired
-    public JobsController(JobService jobService, DtoMapper dtoMapper) {
+    public JobsController(JobService jobService, RestDtoMapper restDtoMapper) {
         this.jobService = jobService;
-        this.dtoMapper = dtoMapper;
+        this.dtoMapper = restDtoMapper;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE)

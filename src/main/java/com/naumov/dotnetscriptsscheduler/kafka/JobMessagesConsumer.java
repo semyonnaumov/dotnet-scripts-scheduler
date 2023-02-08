@@ -29,7 +29,7 @@ public class JobMessagesConsumer {
     @KafkaListener(
             topics = "${scheduler.kafka.running-topic-name}",
             containerFactory = "jobStartedMessagesKafkaListenerContainerFactory",
-            errorHandler = "kafkaListenerValidationErrorHandler"
+            errorHandler = "kafkaListenerPayloadValidationErrorHandler"
     )
     public void onJobStartedMessage(@Payload @Valid JobStartedMessage jobStartedMessage, Acknowledgment ack) {
         String jobId = jobStartedMessage.getJobId();
@@ -46,7 +46,7 @@ public class JobMessagesConsumer {
     @KafkaListener(
             topics = "${scheduler.kafka.finished-topic-name}",
             containerFactory = "jobFinishedMessagesKafkaListenerContainerFactory",
-            errorHandler = "kafkaListenerValidationErrorHandler"
+            errorHandler = "kafkaListenerPayloadValidationErrorHandler"
     )
     public void onJobFinishedMessage(@Payload @Valid JobFinishedMessage jobFinishedMessage, Acknowledgment ack) {
         String jobId = jobFinishedMessage.getJobId();

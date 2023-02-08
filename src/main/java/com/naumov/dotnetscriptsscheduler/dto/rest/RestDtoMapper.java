@@ -7,7 +7,7 @@ import com.naumov.dotnetscriptsscheduler.model.Job;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DtoMapper {
+public class RestDtoMapper {
 
     // -------------------------------------------- "From" mappings ----------------------------------------------------
     public Job fromJobCreateRequest(JobCreateRequest jobCreateRequest) {
