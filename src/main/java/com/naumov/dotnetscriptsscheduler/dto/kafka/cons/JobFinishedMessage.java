@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class JobFinishedMessage {
+public final class JobFinishedMessage {
     @NotBlank
     private String jobId;
     @NotNull

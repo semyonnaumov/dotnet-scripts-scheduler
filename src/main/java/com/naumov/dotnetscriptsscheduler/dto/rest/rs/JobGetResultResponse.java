@@ -1,8 +1,17 @@
 package com.naumov.dotnetscriptsscheduler.dto.rest.rs;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-public class JobGetResultResponse {
-    private final JobResult result;
+@Getter
+@Setter
+public final class JobGetResultResponse {
+    private JobResult result;
+
+    @Override
+    public String toString() {
+        return "JobGetResultResponse{" +
+                "result=" + result +
+                '}';
+    }
 }

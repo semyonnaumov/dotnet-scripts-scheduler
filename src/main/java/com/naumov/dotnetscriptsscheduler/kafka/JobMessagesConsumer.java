@@ -13,7 +13,6 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
-// TODO add exception handling for broken messages (cannot deserialize/invalid)
 @Component
 public class JobMessagesConsumer {
     private static final Logger LOGGER = LogManager.getLogger(JobMessagesConsumer.class);

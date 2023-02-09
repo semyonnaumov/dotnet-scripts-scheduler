@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class JobStartedMessage {
+public final class JobStartedMessage {
     @NotBlank
     private String jobId;
 

@@ -105,7 +105,7 @@ public class JobsController {
         LOGGER.info("Received bad request", e);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new DefaultErrorResponse(e.getMessage()));
+                .body(DefaultErrorResponse.withMessage(e.getMessage()));
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -113,6 +113,6 @@ public class JobsController {
         LOGGER.error("Failed to process request", e);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new DefaultErrorResponse(e.getMessage()));
+                .body(DefaultErrorResponse.withMessage(e.getMessage()));
     }
 }

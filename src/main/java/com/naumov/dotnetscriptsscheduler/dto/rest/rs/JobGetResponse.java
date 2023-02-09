@@ -2,12 +2,21 @@ package com.naumov.dotnetscriptsscheduler.dto.rest.rs;
 
 import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobCreateRequest;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 @Builder
-@Data
-public class JobGetResponse {
-    private final JobCreateRequest request;
-    private final JobStatus status;
-    private final JobResult result;
+@Getter
+public final class JobGetResponse {
+    private JobCreateRequest request;
+    private JobStatus status;
+    private JobResult result;
+
+    @Override
+    public String toString() {
+        return "JobGetResponse{" +
+                "request=" + request +
+                ", status=" + status +
+                ", result=" + result +
+                '}';
+    }
 }
