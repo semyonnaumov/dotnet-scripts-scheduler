@@ -3,11 +3,12 @@ package com.naumov.dotnetscriptsscheduler.controller;
 import com.naumov.dotnetscriptsscheduler.dto.rest.RestDtoMapper;
 import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobCreateRequest;
 import com.naumov.dotnetscriptsscheduler.dto.rest.rs.*;
+import com.naumov.dotnetscriptsscheduler.exception.BadInputException;
 import com.naumov.dotnetscriptsscheduler.model.Job;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -40,18 +42,13 @@ public class JobsController {
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<JobCreateResponse> createJob(@Valid @RequestBody JobCreateRequest jobCreateRequest) {
         LOGGER.info("Received job creation request {}", jobCreateRequest.getRequestId());
+        Job newJob = jobService.createOrGetJob(dtoMapper.fromJobCreateRequest(jobCreateRequest));
 
-        Optional<Job> jobOptional = jobService.findJobByRequestId(jobCreateRequest.getRequestId());
-        if (jobOptional.isEmpty()) {
-            Job newJob = jobService.createJob(dtoMapper.fromJobCreateRequest(jobCreateRequest));
-            return ResponseEntity.status(HttpStatus.CREATED).body(dtoMapper.toJobCreateResponse(newJob));
-        }
-
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(dtoMapper.toJobCreateResponse(jobOptional.get()));
+        return ResponseEntity.status(HttpStatus.OK).body(dtoMapper.toJobCreateResponse(newJob));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<JobGetResponse> getJob(@NotBlank @PathVariable("id") String jobId) {
+    public ResponseEntity<JobGetResponse> getJob(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job request for job {}", jobId);
 
         Optional<Job> jobOptional = jobService.findJob(jobId);
@@ -61,7 +58,7 @@ public class JobsController {
     }
 
     @GetMapping("/{id}/request")
-    public ResponseEntity<JobGetRequestResponse> getJobRequest(@NotBlank @PathVariable("id") String jobId) {
+    public ResponseEntity<JobGetRequestResponse> getJobRequest(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job request request for job {}", jobId);
 
         // TODO
@@ -69,7 +66,7 @@ public class JobsController {
     }
 
     @GetMapping("/{id}/status")
-    public ResponseEntity<JobGetStatusResponse> getJobStatus(@NotBlank @PathVariable("id") String jobId) {
+    public ResponseEntity<JobGetStatusResponse> getJobStatus(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job status request for job {}", jobId);
 
         // TODO
@@ -77,7 +74,7 @@ public class JobsController {
     }
 
     @GetMapping("/{id}/result")
-    public ResponseEntity<JobGetResultResponse> getJobResult(@NotBlank @PathVariable("id") String jobId) {
+    public ResponseEntity<JobGetResultResponse> getJobResult(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job result request for job {}", jobId);
 
         // TODO
@@ -85,7 +82,7 @@ public class JobsController {
     }
 
     @DeleteMapping("/{id}/")
-    public ResponseEntity<?> deleteJob(@NotBlank @PathVariable("id") String jobId) {
+    public ResponseEntity<?> deleteJob(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job deletion request for job {}", jobId);
 
         if (jobService.deleteJob(jobId)) {
@@ -99,7 +96,8 @@ public class JobsController {
             HttpMessageNotReadableException.class,
             MethodArgumentNotValidException.class,
             MissingServletRequestParameterException.class,
-            ConstraintViolationException.class
+            ConstraintViolationException.class,
+            BadInputException.class
     })
     public ResponseEntity<DefaultErrorResponse> handleBadRequestExceptions(Exception e) {
         LOGGER.info("Received bad request", e);

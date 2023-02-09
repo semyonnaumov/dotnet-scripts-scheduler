@@ -6,8 +6,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Repository
 @Transactional(propagation = Propagation.MANDATORY)
 public interface JobsRepository extends JpaRepository<Job, String> {
-    // TODO add methods
+
+    Optional<Job> findByRequestMessageId(String messageId);
 }

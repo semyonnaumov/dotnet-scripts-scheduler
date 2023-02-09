@@ -1,13 +1,17 @@
 package com.naumov.dotnetscriptsscheduler.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import static com.naumov.dotnetscriptsscheduler.util.StringUtil.omitLongString;
+
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "job_request_payloads")
 public class JobRequestPayload {
@@ -21,7 +25,17 @@ public class JobRequestPayload {
     private String script;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "config_json", updatable = false)
-    private JobPayloadConfig jobPayloadConfigJson;
+    private JobPayloadConfig jobPayloadConfig;
     @Column(name = "agent_type", nullable = false, updatable = false)
     private String agentType;
+
+    @Override
+    public String toString() {
+        return "JobRequestPayload{" +
+                "id=" + id +
+                ", script='" + omitLongString(script) + '\'' +
+                ", jobPayloadConfig=" + jobPayloadConfig +
+                ", agentType='" + agentType + '\'' +
+                '}';
+    }
 }

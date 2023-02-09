@@ -4,13 +4,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 import static com.naumov.dotnetscriptsscheduler.util.StringUtil.omitLongString;
 
 @Getter
 @Setter
 @Builder
 public final class JobTaskMessage {
-    private String jobId;
+    private UUID jobId;
     private String script;
     private JobConfig jobConfig;
 

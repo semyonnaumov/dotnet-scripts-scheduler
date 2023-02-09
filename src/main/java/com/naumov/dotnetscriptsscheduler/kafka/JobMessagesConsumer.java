@@ -13,6 +13,8 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class JobMessagesConsumer {
     private static final Logger LOGGER = LogManager.getLogger(JobMessagesConsumer.class);
@@ -31,10 +33,10 @@ public class JobMessagesConsumer {
             errorHandler = "kafkaListenerPayloadValidationErrorHandler"
     )
     public void onJobStartedMessage(@Payload @Valid JobStartedMessage jobStartedMessage, Acknowledgment ack) {
-        String jobId = jobStartedMessage.getJobId();
+        UUID jobId = jobStartedMessage.getJobId();
         LOGGER.info("Received job {} started message", jobId);
         try {
-            jobService.onStarted(jobId);
+            jobService.onJobStarted(jobId);
             ack.acknowledge();
         } catch (RuntimeException e) {
             LOGGER.error("Failed to process job {} started message", jobStartedMessage);
@@ -48,10 +50,10 @@ public class JobMessagesConsumer {
             errorHandler = "kafkaListenerPayloadValidationErrorHandler"
     )
     public void onJobFinishedMessage(@Payload @Valid JobFinishedMessage jobFinishedMessage, Acknowledgment ack) {
-        String jobId = jobFinishedMessage.getJobId();
+        UUID jobId = jobFinishedMessage.getJobId();
         LOGGER.info("Received job {} finished message", jobId);
         try {
-            jobService.onFinished(kafkaDtoMapper.fromJobFinishedMessage(jobFinishedMessage));
+            jobService.onJobFinished(kafkaDtoMapper.fromJobFinishedMessage(jobFinishedMessage));
             ack.acknowledge();
         } catch (RuntimeException e) {
             LOGGER.error("Failed to process job {} finished message", jobFinishedMessage);

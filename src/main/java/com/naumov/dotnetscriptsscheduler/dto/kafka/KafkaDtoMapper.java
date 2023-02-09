@@ -27,7 +27,7 @@ public class KafkaDtoMapper {
         return JobTaskMessage.builder()
                 .jobId(job.getId())
                 .script(job.getRequest().getPayload().getScript())
-                .jobConfig(toJobConfig(job.getRequest().getPayload().getJobPayloadConfigJson()))
+                .jobConfig(toJobConfig(job.getRequest().getPayload().getJobPayloadConfig()))
                 .build();
     }
 

@@ -1,11 +1,13 @@
 package com.naumov.dotnetscriptsscheduler.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "job_requests")
 public class JobRequest {
@@ -20,4 +22,14 @@ public class JobRequest {
     @OneToOne(cascade = CascadeType.ALL, optional = false, orphanRemoval = true)
     @JoinColumn(name = "payload_id", nullable = false, updatable = false)
     private JobRequestPayload payload;
+
+    @Override
+    public String toString() {
+        return "JobRequest{" +
+                "id=" + id +
+                ", messageId='" + messageId + '\'' +
+                ", senderId='" + senderId + '\'' +
+                ", payload=" + payload +
+                '}';
+    }
 }

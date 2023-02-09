@@ -5,24 +5,24 @@ import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface JobService {
 
-    Job createJob(Job job);
+    // must be idempotent
+    Job createOrGetJob(JobRequest job);
 
-    Optional<Job> findJob(String id);
+    Optional<Job> findJob(UUID id);
 
-    Optional<Job> findJobByRequestId(String requestId);
+    Optional<JobRequest> findJobRequestByJobId(UUID id);
 
-    Optional<JobRequest> findJobRequestByJobId(String jobId);
+    Optional<JobResult> findJobResultByJobId(UUID id);
 
-    Optional<JobResult> findJobResultByJobId(String jobId);
-
-    boolean deleteJob(String id);
+    boolean deleteJob(UUID id);
 
     // must be idempotent
-    void onStarted(String jobId);
+    void onJobStarted(UUID id);
 
     // must be idempotent
-    void onFinished(Job job);
+    void onJobFinished(Job job);
 }

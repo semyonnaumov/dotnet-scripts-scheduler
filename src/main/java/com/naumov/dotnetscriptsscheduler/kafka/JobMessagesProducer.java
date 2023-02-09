@@ -3,6 +3,7 @@ package com.naumov.dotnetscriptsscheduler.kafka;
 import com.naumov.dotnetscriptsscheduler.config.props.SchedulerKafkaProperties;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.KafkaDtoMapper;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.prod.JobTaskMessage;
+import com.naumov.dotnetscriptsscheduler.exception.BadInputException;
 import com.naumov.dotnetscriptsscheduler.exception.JobMessagesProducerException;
 import com.naumov.dotnetscriptsscheduler.model.Job;
 import com.naumov.dotnetscriptsscheduler.service.WorkerTypesService;
@@ -14,6 +15,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Component
 public class JobMessagesProducer {
@@ -37,6 +39,8 @@ public class JobMessagesProducer {
     public void sendJobTaskMessageAsync(Job job) {
         String topicName = getTopicName(job);
         JobTaskMessage jobTaskMessage = kafkaDtoMapper.toJobTaskMessage(job);
+
+        LOGGER.debug("Sending job task message {} for job {}", jobTaskMessage, job.getId());
         jobTaskKafkaTemplate.send(topicName, jobTaskMessage)
                 .thenAccept(res -> {
                     LOGGER.info("Sent task for job {} to topic {}", jobTaskMessage.getJobId(), topicName);
@@ -48,7 +52,7 @@ public class JobMessagesProducer {
 
     private String getTopicName(Job job) {
         Objects.requireNonNull(job, "Parameter job must not be null");
-        String jobId = job.getId();
+        UUID jobId = job.getId();
         if (job.getRequest() == null || job.getRequest().getPayload() == null ||
                 job.getRequest().getPayload().getAgentType() == null) {
             LOGGER.error("Failed to get topic name for job {}: agentType is null", jobId);
@@ -59,7 +63,7 @@ public class JobMessagesProducer {
         if (!workerTypesService.workerExists(workerType)) {
             LOGGER.error("Wrong worker type {}: available types are {}", workerType,
                     workerTypesService.getAllWorkerTypes());
-            throw new JobMessagesProducerException("Wrong worker type " + workerType + ": available types are " +
+            throw new BadInputException("Wrong worker type " + workerType + ": available types are " +
                     workerTypesService.getAllWorkerTypes());
         }
 
