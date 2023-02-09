@@ -4,7 +4,10 @@ import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobCompletionStatus;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobFinishedMessage;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobStatus;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.ScriptResults;
+import com.naumov.dotnetscriptsscheduler.dto.kafka.prod.JobConfig;
+import com.naumov.dotnetscriptsscheduler.dto.kafka.prod.JobTaskMessage;
 import com.naumov.dotnetscriptsscheduler.model.Job;
+import com.naumov.dotnetscriptsscheduler.model.JobPayloadConfig;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +16,32 @@ import java.util.Objects;
 @Component
 public class KafkaDtoMapper {
 
+    public JobTaskMessage toJobTaskMessage(Job job) {
+        Objects.requireNonNull(job, "Parameter job must not be null");
+
+        if (job.getRequest() == null || job.getRequest().getPayload() == null) {
+            throw new IllegalStateException("Unable to map " + Job.class.getSimpleName() + " to " +
+                    JobTaskMessage.class.getSimpleName() + ": no payload");
+        }
+
+        return JobTaskMessage.builder()
+                .jobId(job.getId())
+                .script(job.getRequest().getPayload().getScript())
+                .jobConfig(toJobConfig(job.getRequest().getPayload().getJobPayloadConfigJson()))
+                .build();
+    }
+
+    private JobConfig toJobConfig(JobPayloadConfig jobPayloadConfigJson) {
+        Objects.requireNonNull(jobPayloadConfigJson, "Parameter jobPayloadConfigJson must not be null");
+
+        JobConfig jobConfig = new JobConfig();
+        jobConfig.setNugetConfigXml(jobConfig.getNugetConfigXml());
+        return jobConfig;
+    }
+
     public Job fromJobFinishedMessage(JobFinishedMessage jobFinishedMessage) {
+        Objects.requireNonNull(jobFinishedMessage, "Parameter jobFinishedMessage must not be null");
+
         Job job = new Job();
         job.setId(jobFinishedMessage.getJobId());
 
