@@ -20,9 +20,8 @@ public class KafkaListenerPayloadValidationErrorHandler implements ManualAckList
                               Consumer<?, ?> consumer,
                               Acknowledgment ack) {
         if (exception.getCause() instanceof MethodArgumentNotValidException cause) {
-            LOGGER.warn("Failed to validate kafka message {}: {}", message.getPayload(), cause.getMessage());
+            LOGGER.error("Failed to validate kafka message {}: {}", message.getPayload(), cause.getMessage());
             if (ack != null) ack.acknowledge();
-
             return null;
         } else {
             throw exception;
