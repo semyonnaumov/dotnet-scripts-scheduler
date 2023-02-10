@@ -80,6 +80,7 @@ public class JobsController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    // TODO test when result comes in
     @GetMapping("/{id}/result")
     public ResponseEntity<JobGetResultResponse> getJobResult(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job result request for job {}", jobId);
@@ -90,11 +91,10 @@ public class JobsController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @DeleteMapping("/{id}/")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteJob(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job deletion request for job {}", jobId);
 
-        // TODO check
         if (jobService.deleteJob(jobId)) {
             return ResponseEntity.status(HttpStatus.OK).build();
         }

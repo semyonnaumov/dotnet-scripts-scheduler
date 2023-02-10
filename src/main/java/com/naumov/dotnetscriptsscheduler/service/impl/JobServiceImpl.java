@@ -48,6 +48,7 @@ public class JobServiceImpl implements JobService {
             Job newJob = prepareJob(jobRequest);
             Job savedJob = jobsRepository.saveAndFlush(newJob); // all associations saved here using cascade
             jobMessagesProducer.sendJobTaskMessageAsync(savedJob);
+            LOGGER.info("Created new job {}", jobRequest.getId());
 
             return JobCreationResult.ofNewJob(savedJob);
         } catch (RuntimeException e) {
@@ -93,9 +94,26 @@ public class JobServiceImpl implements JobService {
         return jobsRepository.findJobResultByJobId(id);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     @Override
     public boolean deleteJob(UUID id) {
-        return true;
+        LOGGER.debug("Job deletion requested, job {}", id);
+
+        boolean jobExists = jobsRepository.existsById(id);
+        if (!jobExists) {
+            LOGGER.info("Job {} requested for deletion not found", id);
+            return false;
+        }
+
+        try {
+            jobsRepository.deleteById(id);
+            LOGGER.info("Deleted job {}", id);
+
+            return true;
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to delete job {}", id, e);
+            throw e;
+        }
     }
 
     @Transactional
