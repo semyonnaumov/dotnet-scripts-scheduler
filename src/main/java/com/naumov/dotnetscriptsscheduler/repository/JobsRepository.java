@@ -22,7 +22,7 @@ public interface JobsRepository extends JpaRepository<Job, UUID> {
 
     @Override
     @NonNull
-    @EntityGraph(attributePaths = {"request", "result"})
+    @EntityGraph(attributePaths = {"request", "request.payload", "result"})
     Optional<Job> findById(@NonNull UUID id);
 
     @Query("SELECT j.status FROM Job j LEFT JOIN j.status WHERE j.id=:id")
