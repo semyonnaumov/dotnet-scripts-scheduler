@@ -112,3 +112,9 @@ databaseChangeLog:
                     foreignKeyName: result_id_fk
                     referencedTableName: job_results
                     referencedColumnNames: id
+              - column:
+                  name: creation_ts
+                  type: timestamp with time zone
+                  defaultValueComputed: current_timestamp
+                  constraints:
+                    nullable: false

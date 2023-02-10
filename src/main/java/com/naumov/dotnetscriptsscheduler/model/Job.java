@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -28,6 +29,11 @@ public class Job {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "result_id")
     private JobResult result;
+    @Column(name = "creation_ts",
+            columnDefinition = "timestamp with time zone DEFAULT current_timestamp",
+            insertable = false,
+            updatable = false)
+    private OffsetDateTime creationOffsetDateTime;
 
     @Override
     public String toString() {

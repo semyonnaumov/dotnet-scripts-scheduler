@@ -8,6 +8,7 @@ import com.naumov.dotnetscriptsscheduler.dto.kafka.prod.JobConfig;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.prod.JobTaskMessage;
 import com.naumov.dotnetscriptsscheduler.model.Job;
 import com.naumov.dotnetscriptsscheduler.model.JobPayloadConfig;
+import com.naumov.dotnetscriptsscheduler.model.JobRequestPayload;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 import org.springframework.stereotype.Component;
 
@@ -16,29 +17,29 @@ import java.util.Objects;
 @Component
 public class KafkaDtoMapper {
 
+    // -------------------------------------------- "To" mappings --------------------------------------------------- //
     public JobTaskMessage toJobTaskMessage(Job job) {
-        Objects.requireNonNull(job, "Parameter job must not be null");
+        if (job == null) return null;
 
-        if (job.getRequest() == null || job.getRequest().getPayload() == null) {
-            throw new IllegalStateException("Unable to map " + Job.class.getSimpleName() + " to " +
-                    JobTaskMessage.class.getSimpleName() + ": no payload");
+        JobTaskMessage.JobTaskMessageBuilder builder = JobTaskMessage.builder().jobId(job.getId());
+        if (job.getRequest() != null && job.getRequest().getPayload() != null) {
+            JobRequestPayload payload = job.getRequest().getPayload();
+            builder.script(payload.getScript())
+                    .jobConfig(toJobConfig(payload.getJobPayloadConfig()));
         }
 
-        return JobTaskMessage.builder()
-                .jobId(job.getId())
-                .script(job.getRequest().getPayload().getScript())
-                .jobConfig(toJobConfig(job.getRequest().getPayload().getJobPayloadConfig()))
-                .build();
+        return builder.build();
     }
 
     private JobConfig toJobConfig(JobPayloadConfig jobPayloadConfigJson) {
-        Objects.requireNonNull(jobPayloadConfigJson, "Parameter jobPayloadConfigJson must not be null");
+        if (jobPayloadConfigJson == null) return null;
 
-        JobConfig jobConfig = new JobConfig();
-        jobConfig.setNugetConfigXml(jobPayloadConfigJson.getNugetConfigXml());
-        return jobConfig;
+        return JobConfig.builder()
+                .nugetConfigXml(jobPayloadConfigJson.getNugetConfigXml())
+                .build();
     }
 
+    // -------------------------------------------- "From" mappings ------------------------------------------------- //
     public Job fromJobFinishedMessage(JobFinishedMessage jobFinishedMessage) {
         Objects.requireNonNull(jobFinishedMessage, "Parameter jobFinishedMessage must not be null");
 

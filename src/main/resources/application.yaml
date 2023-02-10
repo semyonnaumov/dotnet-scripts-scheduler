@@ -1,4 +1,9 @@
 scheduler:
+  jobs:
+    result-waiting-timeout-ms: 300000 # 5 min, should be greater than
+                                      # container-operations-timeout-ms + job-timeout-ms of worker (3 min now)
+    result-waiting-cleanup-period-ms: 60000 # 1 min
+    retention-days: 1
   kafka:
     broker-url: localhost:8097
     reconnect-backoff-ms: 100

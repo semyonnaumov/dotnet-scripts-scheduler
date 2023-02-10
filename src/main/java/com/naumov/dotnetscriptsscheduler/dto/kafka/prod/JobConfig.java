@@ -1,14 +1,14 @@
 package com.naumov.dotnetscriptsscheduler.dto.kafka.prod;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import static com.naumov.dotnetscriptsscheduler.util.StringUtil.omitLongString;
 
 @Getter
-@Setter
+@Builder
 public final class JobConfig {
-    private String nugetConfigXml;
+    private final String nugetConfigXml;
 
     @Override
     public String toString() {
