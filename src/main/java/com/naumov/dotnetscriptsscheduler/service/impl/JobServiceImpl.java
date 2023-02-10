@@ -2,16 +2,19 @@ package com.naumov.dotnetscriptsscheduler.service.impl;
 
 import com.naumov.dotnetscriptsscheduler.kafka.JobMessagesProducer;
 import com.naumov.dotnetscriptsscheduler.model.Job;
+import com.naumov.dotnetscriptsscheduler.model.JobCreationResult;
 import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 import com.naumov.dotnetscriptsscheduler.repository.JobsRepository;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
 import com.naumov.dotnetscriptsscheduler.service.exception.JobServiceException;
-import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -28,23 +31,25 @@ public class JobServiceImpl implements JobService {
         this.jobMessagesProducer = jobMessagesProducer;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     @Override
-    public Job createOrGetJob(JobRequest jobRequest) {
+    public JobCreationResult createOrGetJob(JobRequest jobRequest) {
+        LOGGER.debug("Job creation requested, job request {}", jobRequest);
+
         validateJobRequest(jobRequest);
 
         Optional<Job> foundJobOptional = jobsRepository.findByRequestMessageId(jobRequest.getMessageId());
         if (foundJobOptional.isPresent()) {
-            LOGGER.info("Skip job creation, found duplicate request: message {}", jobRequest.getMessageId());
-            return foundJobOptional.get();
+            LOGGER.info("Skip job creation, found existing job with message id {}", jobRequest.getMessageId());
+            return JobCreationResult.ofExistingJob(foundJobOptional.get());
         }
 
         try {
             Job newJob = prepareJob(jobRequest);
-            Job savedJob = jobsRepository.saveAndFlush(newJob); // all associations are saved here using cascade
+            Job savedJob = jobsRepository.saveAndFlush(newJob); // all associations saved here using cascade
             jobMessagesProducer.sendJobTaskMessageAsync(savedJob);
 
-            return savedJob;
+            return JobCreationResult.ofNewJob(savedJob);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to create new job from job request {}", jobRequest, e);
             throw e;
@@ -52,9 +57,9 @@ public class JobServiceImpl implements JobService {
     }
 
     private void validateJobRequest(JobRequest jobRequest) {
-        if (jobRequest == null) throw new JobServiceException("Created jobRequest cannot be null");
-        if (jobRequest.getMessageId() == null) throw new JobServiceException("Created jobRequest messageId cannot be null");
-        if (jobRequest.getId() != null) throw new JobServiceException("Created jobRequest cannot have an ID");
+        if (jobRequest == null) throw new JobServiceException("Cannot create job from null request");
+        if (jobRequest.getMessageId() == null) throw new JobServiceException("No message id in job request");
+        if (jobRequest.getId() != null) throw new JobServiceException("Job creation request cannot have an ID");
     }
 
     private Job prepareJob(JobRequest jobRequest) {

@@ -1,6 +1,7 @@
 package com.naumov.dotnetscriptsscheduler.service;
 
 import com.naumov.dotnetscriptsscheduler.model.Job;
+import com.naumov.dotnetscriptsscheduler.model.JobCreationResult;
 import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
 public interface JobService {
 
     // must be idempotent
-    Job createOrGetJob(JobRequest job);
+    JobCreationResult createOrGetJob(JobRequest job);
 
     Optional<Job> findJob(UUID id);
 

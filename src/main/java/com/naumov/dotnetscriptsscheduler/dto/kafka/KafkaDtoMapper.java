@@ -35,7 +35,7 @@ public class KafkaDtoMapper {
         Objects.requireNonNull(jobPayloadConfigJson, "Parameter jobPayloadConfigJson must not be null");
 
         JobConfig jobConfig = new JobConfig();
-        jobConfig.setNugetConfigXml(jobConfig.getNugetConfigXml());
+        jobConfig.setNugetConfigXml(jobPayloadConfigJson.getNugetConfigXml());
         return jobConfig;
     }
 

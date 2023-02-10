@@ -5,6 +5,7 @@ import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobCreateRequest;
 import com.naumov.dotnetscriptsscheduler.dto.rest.rs.*;
 import com.naumov.dotnetscriptsscheduler.exception.BadInputException;
 import com.naumov.dotnetscriptsscheduler.model.Job;
+import com.naumov.dotnetscriptsscheduler.model.JobCreationResult;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -42,15 +43,15 @@ public class JobsController {
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<JobCreateResponse> createJob(@Valid @RequestBody JobCreateRequest jobCreateRequest) {
         LOGGER.info("Received job creation request {}", jobCreateRequest.getRequestId());
-        Job newJob = jobService.createOrGetJob(dtoMapper.fromJobCreateRequest(jobCreateRequest));
+        JobCreationResult jobCreationResult = jobService.createOrGetJob(dtoMapper.fromJobCreateRequest(jobCreateRequest));
+        HttpStatus responseStatus = jobCreationResult.isCreated() ? HttpStatus.CREATED : HttpStatus.OK;
 
-        return ResponseEntity.status(HttpStatus.OK).body(dtoMapper.toJobCreateResponse(newJob));
+        return ResponseEntity.status(responseStatus).body(dtoMapper.toJobCreateResponse(jobCreationResult.getJob()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<JobGetResponse> getJob(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job request for job {}", jobId);
-
         Optional<Job> jobOptional = jobService.findJob(jobId);
 
         return jobOptional.map(job -> ResponseEntity.status(HttpStatus.OK).body(dtoMapper.toJobGetResponse(job)))
