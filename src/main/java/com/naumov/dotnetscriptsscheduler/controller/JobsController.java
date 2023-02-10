@@ -7,6 +7,7 @@ import com.naumov.dotnetscriptsscheduler.exception.BadInputException;
 import com.naumov.dotnetscriptsscheduler.model.Job;
 import com.naumov.dotnetscriptsscheduler.model.JobCreationResult;
 import com.naumov.dotnetscriptsscheduler.model.JobRequest;
+import com.naumov.dotnetscriptsscheduler.model.JobResult;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -64,31 +65,36 @@ public class JobsController {
         LOGGER.info("Received job request request for job {}", jobId);
         Optional<JobRequest> jobRequestOptional = jobService.findJobRequestByJobId(jobId);
 
-        return jobRequestOptional.map(job -> ResponseEntity.status(HttpStatus.OK)
-                        .body(dtoMapper.toJobGetRequestResponse(jobId, job)))
+        return jobRequestOptional.map(jr -> ResponseEntity.status(HttpStatus.OK)
+                        .body(dtoMapper.toJobGetRequestResponse(jobId, jr)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping("/{id}/status")
     public ResponseEntity<JobGetStatusResponse> getJobStatus(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job status request for job {}", jobId);
+        Optional<Job.JobStatus> jobStatusOptional = jobService.findJobStatusByJobId(jobId);
 
-        // TODO
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return jobStatusOptional.map(js -> ResponseEntity.status(HttpStatus.OK)
+                        .body(dtoMapper.toJobGetStatusResponse(jobId, js)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping("/{id}/result")
     public ResponseEntity<JobGetResultResponse> getJobResult(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job result request for job {}", jobId);
+        Optional<JobResult> jobResultOptional = jobService.findJobResultByJobId(jobId);
 
-        // TODO
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return jobResultOptional.map(jr -> ResponseEntity.status(HttpStatus.OK)
+                        .body(dtoMapper.toJobGetResultResponse(jobId, jr)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @DeleteMapping("/{id}/")
     public ResponseEntity<?> deleteJob(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job deletion request for job {}", jobId);
 
+        // TODO check
         if (jobService.deleteJob(jobId)) {
             return ResponseEntity.status(HttpStatus.OK).build();
         }

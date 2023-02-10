@@ -75,14 +75,22 @@ public class JobServiceImpl implements JobService {
         return jobsRepository.findById(id);
     }
 
+    @Transactional
     @Override
     public Optional<JobRequest> findJobRequestByJobId(UUID id) {
-        return Optional.empty();
+        return jobsRepository.findJobRequestByJobId(id);
     }
 
+    @Transactional
+    @Override
+    public Optional<Job.JobStatus> findJobStatusByJobId(UUID id) {
+        return jobsRepository.findJobStatusByJobId(id);
+    }
+
+    @Transactional
     @Override
     public Optional<JobResult> findJobResultByJobId(UUID id) {
-        return Optional.empty();
+        return jobsRepository.findJobResultByJobId(id);
     }
 
     @Override

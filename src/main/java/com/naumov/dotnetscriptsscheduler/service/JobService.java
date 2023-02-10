@@ -17,6 +17,8 @@ public interface JobService {
 
     Optional<JobRequest> findJobRequestByJobId(UUID id);
 
+    Optional<Job.JobStatus> findJobStatusByJobId(UUID id);
+
     Optional<JobResult> findJobResultByJobId(UUID id);
 
     boolean deleteJob(UUID id);
