@@ -9,6 +9,8 @@ import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.model.JobRequestPayload;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class RestDtoMapper {
 
@@ -61,6 +63,33 @@ public class RestDtoMapper {
                 .build();
     }
 
+    public JobGetRequestResponse toJobGetRequestResponse(UUID jobId, JobRequest jobRequest) {
+        if (jobId == null && jobRequest == null) return null;
+
+        return JobGetRequestResponse.builder()
+                .jobId(jobId)
+                .request(toJobRequest(jobRequest))
+                .build();
+    }
+
+    public JobGetStatusResponse toJobGetStatusResponse(UUID jobId, Job.JobStatus jobStatus) {
+        if (jobId == null && jobStatus == null) return null;
+
+        return JobGetStatusResponse.builder()
+                .jobId(jobId)
+                .status(toJobStatus(jobStatus))
+                .build();
+    }
+
+    public JobGetResultResponse toJobGetResultResponse(UUID jobId, com.naumov.dotnetscriptsscheduler.model.JobResult jobResult) {
+        if (jobId == null && jobResult == null) return null;
+
+        return JobGetResultResponse.builder()
+                .jobId(jobId)
+                .result(toJobResult(jobResult))
+                .build();
+    }
+
     private JobCreateRequest toJobRequest(JobRequest request) {
         if (request == null) return null;
 
@@ -91,6 +120,7 @@ public class RestDtoMapper {
 
     private JobStatus toJobStatus(Job.JobStatus status) {
         if (status == null) return null;
+
         try {
             return JobStatus.valueOf(status.name());
         } catch (IllegalArgumentException e) {

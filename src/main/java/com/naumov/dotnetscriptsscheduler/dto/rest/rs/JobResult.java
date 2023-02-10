@@ -8,9 +8,9 @@ import static com.naumov.dotnetscriptsscheduler.util.StringUtil.omitLongString;
 @Builder
 @Getter
 public final class JobResult {
-    private JobCompletionStatus finishedWith;
-    private String stdout;
-    private String stderr;
+    private final JobCompletionStatus finishedWith;
+    private final String stdout;
+    private final String stderr;
 
     @Override
     public String toString() {

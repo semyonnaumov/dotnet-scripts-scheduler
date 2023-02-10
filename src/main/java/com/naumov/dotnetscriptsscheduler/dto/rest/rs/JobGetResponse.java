@@ -9,10 +9,10 @@ import java.util.UUID;
 @Builder
 @Getter
 public final class JobGetResponse {
-    private UUID jobId;
-    private JobCreateRequest request;
-    private JobStatus status;
-    private JobResult result;
+    private final UUID jobId;
+    private final JobCreateRequest request;
+    private final JobStatus status;
+    private final JobResult result;
 
     @Override
     public String toString() {

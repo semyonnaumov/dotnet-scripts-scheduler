@@ -6,6 +6,7 @@ import com.naumov.dotnetscriptsscheduler.dto.rest.rs.*;
 import com.naumov.dotnetscriptsscheduler.exception.BadInputException;
 import com.naumov.dotnetscriptsscheduler.model.Job;
 import com.naumov.dotnetscriptsscheduler.model.JobCreationResult;
+import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -51,7 +52,7 @@ public class JobsController {
 
     @GetMapping("/{id}")
     public ResponseEntity<JobGetResponse> getJob(@NotNull @PathVariable("id") UUID jobId) {
-        LOGGER.info("Received job request for job {}", jobId);
+        LOGGER.info("Received full job info request for job {}", jobId);
         Optional<Job> jobOptional = jobService.findJob(jobId);
 
         return jobOptional.map(job -> ResponseEntity.status(HttpStatus.OK).body(dtoMapper.toJobGetResponse(job)))
@@ -61,9 +62,11 @@ public class JobsController {
     @GetMapping("/{id}/request")
     public ResponseEntity<JobGetRequestResponse> getJobRequest(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job request request for job {}", jobId);
+        Optional<JobRequest> jobRequestOptional = jobService.findJobRequestByJobId(jobId);
 
-        // TODO
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return jobRequestOptional.map(job -> ResponseEntity.status(HttpStatus.OK)
+                        .body(dtoMapper.toJobGetRequestResponse(jobId, job)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping("/{id}/status")
@@ -104,7 +107,7 @@ public class JobsController {
         LOGGER.info("Received bad request", e);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(DefaultErrorResponse.withMessage(e.getMessage()));
+                .body(DefaultErrorResponse.builder().message(e.getMessage()).build());
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -112,6 +115,6 @@ public class JobsController {
         LOGGER.error("Failed to process request", e);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(DefaultErrorResponse.withMessage(e.getMessage()));
+                .body(DefaultErrorResponse.builder().message(e.getMessage()).build());
     }
 }
