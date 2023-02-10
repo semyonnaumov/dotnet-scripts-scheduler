@@ -12,10 +12,50 @@ import com.naumov.dotnetscriptsscheduler.model.JobRequestPayload;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-
 @Component
 public class KafkaDtoMapper {
+
+    // -------------------------------------------- "From" mappings ------------------------------------------------- //
+    public Job fromJobFinishedMessage(JobFinishedMessage jobFinishedMessage) {
+        if (jobFinishedMessage == null) return null;
+
+        Job.JobBuilder jobBuilder = Job.builder()
+                .id(jobFinishedMessage.getJobId());
+
+        JobStatus jobMessageStatus = jobFinishedMessage.getStatus();
+        if (jobMessageStatus == JobStatus.ACCEPTED) {
+            jobBuilder.status(Job.JobStatus.FINISHED)
+                    .result(fromJobFinishedMessageScriptResults(jobFinishedMessage.getScriptResults()));
+        } else if (jobMessageStatus == JobStatus.REJECTED) {
+            jobBuilder.status(Job.JobStatus.REJECTED);
+        } else {
+            throw new IllegalStateException("Unable to map " + JobFinishedMessage.class.getSimpleName() + " to " +
+                    Job.class.getSimpleName() + " with status " + jobMessageStatus);
+        }
+
+        return jobBuilder.build();
+    }
+
+    private JobResult fromJobFinishedMessageScriptResults(ScriptResults scriptResults) {
+        if (scriptResults == null) return null;
+
+        return JobResult.builder()
+                .finishedWith(fromJobFinishedMessageScriptResultsFinishedWith(scriptResults.getFinishedWith()))
+                .stdout(scriptResults.getStdout())
+                .stderr(scriptResults.getStderr())
+                .build();
+    }
+
+    private JobResult.JobCompletionStatus fromJobFinishedMessageScriptResultsFinishedWith(JobCompletionStatus finishedWith) {
+        if (finishedWith == null) return null;
+
+        try {
+            return JobResult.JobCompletionStatus.valueOf(finishedWith.name());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Unable to map " + JobCompletionStatus.class.getSimpleName() + " to " +
+                    JobResult.JobCompletionStatus.class.getSimpleName() + " from value " + finishedWith);
+        }
+    }
 
     // -------------------------------------------- "To" mappings --------------------------------------------------- //
     public JobTaskMessage toJobTaskMessage(Job job) {
@@ -37,43 +77,5 @@ public class KafkaDtoMapper {
         return JobConfig.builder()
                 .nugetConfigXml(jobPayloadConfigJson.getNugetConfigXml())
                 .build();
-    }
-
-    // -------------------------------------------- "From" mappings ------------------------------------------------- //
-    public Job fromJobFinishedMessage(JobFinishedMessage jobFinishedMessage) {
-        Objects.requireNonNull(jobFinishedMessage, "Parameter jobFinishedMessage must not be null");
-
-        Job job = new Job();
-        job.setId(jobFinishedMessage.getJobId());
-
-        JobStatus jobMessageStatus = jobFinishedMessage.getStatus();
-        if (jobMessageStatus == JobStatus.ACCEPTED) {
-            job.setStatus(Job.JobStatus.FINISHED);
-            job.setResult(fromJobFinishedMessageScriptResults(jobFinishedMessage.getScriptResults()));
-        } else if (jobMessageStatus == JobStatus.REJECTED) {
-            job.setStatus(Job.JobStatus.REJECTED);
-        } else {
-            throw new IllegalStateException("Unable to map " + JobFinishedMessage.class.getSimpleName() + " to " +
-                    Job.class.getSimpleName() + " with status " + jobMessageStatus);
-        }
-
-        return job;
-    }
-
-    private JobResult fromJobFinishedMessageScriptResults(ScriptResults scriptResults) {
-        Objects.requireNonNull(scriptResults, "Parameter scriptResults must not be null");
-
-        JobResult jobResult = new JobResult();
-        jobResult.setFinishedWith(fromJobFinishedMessageScriptResultsFinishedWith(scriptResults.getFinishedWith()));
-        jobResult.setStdout(scriptResults.getStdout());
-        jobResult.setStderr(scriptResults.getStderr());
-
-        return jobResult;
-    }
-
-    private JobResult.JobCompletionStatus fromJobFinishedMessageScriptResultsFinishedWith(JobCompletionStatus finishedWith) {
-        Objects.requireNonNull(finishedWith, "Parameter finishedWith must not be null");
-
-        return JobResult.JobCompletionStatus.valueOf(finishedWith.name());
     }
 }
