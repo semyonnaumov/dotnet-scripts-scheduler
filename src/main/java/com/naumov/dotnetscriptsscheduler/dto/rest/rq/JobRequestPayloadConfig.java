@@ -1,12 +1,14 @@
 package com.naumov.dotnetscriptsscheduler.dto.rest.rq;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import static com.naumov.dotnetscriptsscheduler.util.StringUtil.omitLongString;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public final class JobRequestPayloadConfig {
     private String nugetConfigXml;
 

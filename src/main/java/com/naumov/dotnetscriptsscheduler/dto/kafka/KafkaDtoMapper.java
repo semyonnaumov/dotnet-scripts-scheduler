@@ -29,8 +29,8 @@ public class KafkaDtoMapper {
         } else if (jobMessageStatus == JobStatus.REJECTED) {
             jobBuilder.status(Job.JobStatus.REJECTED);
         } else {
-            throw new IllegalStateException("Unable to map " + JobFinishedMessage.class.getSimpleName() + " to " +
-                    Job.class.getSimpleName() + " with status " + jobMessageStatus);
+            throw new IllegalStateException("Unable to map " + JobFinishedMessage.class.getName() + " to " +
+                    Job.class.getName() + " with status " + jobMessageStatus);
         }
 
         return jobBuilder.build();
@@ -52,8 +52,8 @@ public class KafkaDtoMapper {
         try {
             return JobResult.JobCompletionStatus.valueOf(finishedWith.name());
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Unable to map " + JobCompletionStatus.class.getSimpleName() + " to " +
-                    JobResult.JobCompletionStatus.class.getSimpleName() + " from value " + finishedWith);
+            throw new IllegalStateException("Unable to map " + JobCompletionStatus.class.getName() + " to " +
+                    JobResult.JobCompletionStatus.class.getName() + " from value " + finishedWith);
         }
     }
 

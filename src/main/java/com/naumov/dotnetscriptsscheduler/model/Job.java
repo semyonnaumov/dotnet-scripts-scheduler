@@ -38,10 +38,11 @@ public class Job {
     @Override
     public String toString() {
         return "Job{" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", status=" + status +
                 ", request=" + request +
                 ", result=" + result +
+                ", creationOffsetDateTime=" + creationOffsetDateTime +
                 '}';
     }
 

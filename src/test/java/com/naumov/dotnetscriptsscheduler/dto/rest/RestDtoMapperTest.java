@@ -1,16 +1,16 @@
 package com.naumov.dotnetscriptsscheduler.dto.rest;
 
 import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobCreateRequest;
-import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayload;
 import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayloadConfig;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rs.JobCompletionStatus;
 import com.naumov.dotnetscriptsscheduler.dto.rest.rs.JobCreateResponse;
-import com.naumov.dotnetscriptsscheduler.model.Job;
-import com.naumov.dotnetscriptsscheduler.model.JobPayloadConfig;
-import com.naumov.dotnetscriptsscheduler.model.JobRequest;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rs.JobGetResponse;
+import com.naumov.dotnetscriptsscheduler.model.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
+import static com.naumov.dotnetscriptsscheduler.dto.rest.rs.JobStatus.FINISHED;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RestDtoMapperTest {
@@ -21,7 +21,8 @@ class RestDtoMapperTest {
         JobRequestPayloadConfig jobRequestPayloadConfig = new JobRequestPayloadConfig();
         jobRequestPayloadConfig.setNugetConfigXml("<config/>");
 
-        JobRequestPayload jobRequestPayload = new JobRequestPayload();
+        com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayload jobRequestPayload =
+                new com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayload();
         jobRequestPayload.setScript("script");
         jobRequestPayload.setJobConfig(jobRequestPayloadConfig);
         jobRequestPayload.setAgentType("some-agent");
@@ -82,5 +83,75 @@ class RestDtoMapperTest {
     void testToJobCreateResponseNull() {
         JobCreateResponse jobCreateResponse = dtoMapper.toJobCreateResponse(null);
         assertNull(jobCreateResponse);
+    }
+
+    @Test
+    void testToJobGetResponseRegular() {
+        JobPayloadConfig jobPayloadConfig = JobPayloadConfig.builder()
+                .nugetConfigXml("<config/>")
+                .build();
+
+        JobRequestPayload jobRequestPayload = JobRequestPayload.builder()
+                .id(12345L)
+                .script("script")
+                .jobPayloadConfig(jobPayloadConfig)
+                .agentType("some-agent")
+                .build();
+
+        JobRequest jobRequest = JobRequest.builder()
+                .id(54321L)
+                .messageId("111")
+                .senderId("222")
+                .payload(jobRequestPayload)
+                .build();
+
+
+        JobResult jobResult = JobResult.builder()
+                .id(11111L)
+                .finishedWith(JobResult.JobCompletionStatus.SUCCEEDED)
+                .stdout("stdout")
+                .stderr("stderr")
+                .build();
+
+        UUID uuid = UUID.fromString("7f000001-8637-1fc4-8186-374017c10000");
+        Job job = Job.builder()
+                .id(uuid)
+                .request(jobRequest)
+                .status(Job.JobStatus.FINISHED)
+                .result(jobResult)
+                .build();
+
+        JobGetResponse jobGetResponse = dtoMapper.toJobGetResponse(job);
+        assertNotNull(jobGetResponse);
+        assertEquals(uuid, jobGetResponse.getJobId());
+        assertNotNull(jobGetResponse.getRequest());
+
+        JobCreateRequest request = jobGetResponse.getRequest();
+        assertEquals("111", request.getRequestId());
+        assertEquals("222", request.getSenderId());
+        assertNotNull(request.getPayload());
+
+        com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayload payload = request.getPayload();
+        assertEquals("script", payload.getScript());
+        assertNotNull(payload.getJobConfig());
+
+        JobRequestPayloadConfig jobConfig = payload.getJobConfig();
+        assertEquals("<config/>", jobConfig.getNugetConfigXml());
+
+        assertEquals("some-agent", payload.getAgentType());
+
+        assertEquals(FINISHED, jobGetResponse.getStatus());
+
+        assertNotNull(jobGetResponse.getResult());
+        com.naumov.dotnetscriptsscheduler.dto.rest.rs.JobResult result = jobGetResponse.getResult();
+        assertEquals(JobCompletionStatus.SUCCEEDED, result.getFinishedWith());
+        assertEquals("stdout", result.getStdout());
+        assertEquals("stderr", result.getStderr());
+    }
+
+    @Test
+    void testToJobGetResponseNull() {
+        JobGetResponse jobGetResponse = dtoMapper.toJobGetResponse(null);
+        assertNull(jobGetResponse);
     }
 }

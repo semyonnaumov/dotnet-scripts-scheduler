@@ -2,8 +2,7 @@ package com.naumov.dotnetscriptsscheduler.dto.rest;
 
 import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobCreateRequest;
 import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayloadConfig;
-import com.naumov.dotnetscriptsscheduler.dto.rest.rs.JobCreateResponse;
-import com.naumov.dotnetscriptsscheduler.dto.rest.rs.JobGetResponse;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rs.*;
 import com.naumov.dotnetscriptsscheduler.model.Job;
 import com.naumov.dotnetscriptsscheduler.model.JobPayloadConfig;
 import com.naumov.dotnetscriptsscheduler.model.JobRequest;
@@ -45,12 +44,80 @@ public class RestDtoMapper {
     // -------------------------------------------- "To" mappings --------------------------------------------------- //
     public JobCreateResponse toJobCreateResponse(Job job) {
         if (job == null) return null;
+
         return JobCreateResponse.builder()
                 .jobId(job.getId())
                 .build();
     }
 
     public JobGetResponse toJobGetResponse(Job job) {
-        return null;  // TODO
+        if (job == null) return null;
+
+        return JobGetResponse.builder()
+                .jobId(job.getId())
+                .request(toJobRequest(job.getRequest()))
+                .status(toJobStatus(job.getStatus()))
+                .result(toJobResult(job.getResult()))
+                .build();
+    }
+
+    private JobCreateRequest toJobRequest(JobRequest request) {
+        if (request == null) return null;
+
+        return JobCreateRequest.builder()
+                .requestId(request.getMessageId())
+                .senderId(request.getSenderId())
+                .payload(toJobRequestPayload(request.getPayload()))
+                .build();
+    }
+
+    private com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayload toJobRequestPayload(JobRequestPayload payload) {
+        if (payload == null) return null;
+
+        return com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayload.builder()
+                .script(payload.getScript())
+                .jobConfig(toJobConfig(payload.getJobPayloadConfig()))
+                .agentType(payload.getAgentType())
+                .build();
+    }
+
+    private JobRequestPayloadConfig toJobConfig(JobPayloadConfig jobPayloadConfig) {
+        if (jobPayloadConfig == null) return null;
+
+        return JobRequestPayloadConfig.builder()
+                .nugetConfigXml(jobPayloadConfig.getNugetConfigXml())
+                .build();
+    }
+
+    private JobStatus toJobStatus(Job.JobStatus status) {
+        if (status == null) return null;
+        try {
+            return JobStatus.valueOf(status.name());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Unable to map " + Job.JobStatus.class.getName() + " to " +
+                    JobStatus.class.getName() + " from value " + status);
+        }
+    }
+
+    private JobResult toJobResult(com.naumov.dotnetscriptsscheduler.model.JobResult result) {
+        if (result == null) return null;
+
+        return JobResult.builder()
+                .finishedWith(toJobCompletionStatus(result.getFinishedWith()))
+                .stdout(result.getStdout())
+                .stderr(result.getStderr())
+                .build();
+    }
+
+    private JobCompletionStatus toJobCompletionStatus(com.naumov.dotnetscriptsscheduler.model.JobResult.JobCompletionStatus finishedWith) {
+        if (finishedWith == null) return null;
+
+        try {
+            return JobCompletionStatus.valueOf(finishedWith.name());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Unable to map " +
+                    com.naumov.dotnetscriptsscheduler.model.JobResult.JobCompletionStatus.class.getName() + " to " +
+                    JobCompletionStatus.class.getName() + " from value " + finishedWith);
+        }
     }
 }

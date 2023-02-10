@@ -69,9 +69,10 @@ public class JobServiceImpl implements JobService {
                 .build();
     }
 
+    @Transactional
     @Override
     public Optional<Job> findJob(UUID id) {
-        return Optional.empty();
+        return jobsRepository.findById(id);
     }
 
     @Override
