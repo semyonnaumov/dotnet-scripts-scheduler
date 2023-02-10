@@ -80,7 +80,6 @@ public class JobsController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    // TODO test when result comes in
     @GetMapping("/{id}/result")
     public ResponseEntity<JobGetResultResponse> getJobResult(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job result request for job {}", jobId);

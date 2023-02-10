@@ -36,7 +36,7 @@ public class JobMessagesConsumer {
         UUID jobId = jobStartedMessage.getJobId();
         LOGGER.info("Received job {} started message", jobId);
         try {
-            jobService.onJobStarted(jobId);
+            jobService.updateStartedJob(jobId);
             ack.acknowledge();
         } catch (RuntimeException e) {
             LOGGER.error("Failed to process job {} started message", jobStartedMessage);
@@ -53,7 +53,7 @@ public class JobMessagesConsumer {
         UUID jobId = jobFinishedMessage.getJobId();
         LOGGER.info("Received job {} finished message", jobId);
         try {
-            jobService.onJobFinished(kafkaDtoMapper.fromJobFinishedMessage(jobFinishedMessage));
+            jobService.updateFinishedJob(kafkaDtoMapper.fromJobFinishedMessage(jobFinishedMessage));
             ack.acknowledge();
         } catch (RuntimeException e) {
             LOGGER.error("Failed to process job {} finished message", jobFinishedMessage);

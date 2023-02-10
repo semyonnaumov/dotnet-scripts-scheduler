@@ -24,8 +24,8 @@ public interface JobService {
     boolean deleteJob(UUID id);
 
     // must be idempotent
-    void onJobStarted(UUID id);
+    void updateStartedJob(UUID id);
 
     // must be idempotent
-    void onJobFinished(Job job);
+    void updateFinishedJob(Job job);
 }

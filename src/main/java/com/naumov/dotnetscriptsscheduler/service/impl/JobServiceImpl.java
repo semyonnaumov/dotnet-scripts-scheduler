@@ -35,7 +35,6 @@ public class JobServiceImpl implements JobService {
     @Override
     public JobCreationResult createOrGetJob(JobRequest jobRequest) {
         LOGGER.debug("Creating job for request {}", jobRequest);
-
         validateJobRequest(jobRequest);
 
         Optional<Job> foundJobOptional = jobsRepository.findByRequestMessageId(jobRequest.getMessageId());
@@ -118,14 +117,14 @@ public class JobServiceImpl implements JobService {
 
     @Transactional
     @Override
-    public void onJobStarted(UUID id) {
-        LOGGER.debug("Processing job {} started message", id);
+    public void updateStartedJob(UUID id) {
+        LOGGER.debug("Updating started job {}", id);
 
         Job.JobStatus runningStatus = Job.JobStatus.RUNNING;
         try {
             Optional<Job.JobStatus> jobStatusOptional = jobsRepository.findJobStatusByJobId(id);
             if (jobStatusOptional.isEmpty()) {
-                LOGGER.warn("Unable to set job {} status to {}: job not found", id, runningStatus);
+                LOGGER.warn("Unable to update started job {}: job not found", id);
                 return;
             }
 
@@ -134,18 +133,44 @@ public class JobServiceImpl implements JobService {
                 jobsRepository.updateJobSetStatusTo(id, runningStatus);
                 LOGGER.info("Set job {} status to {}", id, runningStatus);
             } else {
+                // RUNNING, FINISHED or REJECTED
                 LOGGER.warn("Unable to set job {} status to {}: current status is {}",
                         id, runningStatus, currentStatus);
             }
         } catch (RuntimeException e) {
-            LOGGER.error("Failed to set job {} status to {}", id, runningStatus, e);
+            LOGGER.error("Failed to update started job {}", id, e);
             throw e;
         }
     }
 
     @Transactional
     @Override
-    public void onJobFinished(Job job) {
+    public void updateFinishedJob(Job job) {
+        UUID jobId = job.getId();
+        LOGGER.debug("Updating finished job {}", jobId);
 
+        try {
+            Optional<Job> savedJobOptional = jobsRepository.findById(jobId);
+            if (savedJobOptional.isEmpty()) {
+                LOGGER.warn("Unable to update finished job {}: job not found", jobId);
+                return;
+            }
+
+            Job savedJob = savedJobOptional.get();
+            Job.JobStatus currentStatus = savedJob.getStatus();
+            if (currentStatus == Job.JobStatus.PENDING || currentStatus == Job.JobStatus.RUNNING) {
+                savedJob.setStatus(job.getStatus());
+                savedJob.setResult(job.getResult());
+                jobsRepository.save(savedJob);
+
+                LOGGER.info("Successfully updated finished job {}", jobId);
+            } else {
+                // FINISHED or REJECTED
+                LOGGER.warn("Unable to set job {} result: current status is {}", jobId, currentStatus);
+            }
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to update finished job {}", jobId, e);
+            throw e;
+        }
     }
 }
