@@ -5,6 +5,7 @@ import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
@@ -25,14 +26,18 @@ public interface JobsRepository extends JpaRepository<Job, UUID> {
     @EntityGraph(attributePaths = {"request", "request.payload", "result"})
     Optional<Job> findById(@NonNull UUID id);
 
-    @Query("SELECT j.request FROM Job j LEFT JOIN j.request WHERE j.id=:id")
+    @Query("SELECT j.request FROM Job j LEFT JOIN j.request WHERE j.id = :id")
     Optional<JobRequest> findJobRequestByJobId(UUID id);
 
     @Query("SELECT j.status FROM Job j WHERE j.id=:id")
     Optional<Job.JobStatus> findJobStatusByJobId(UUID id);
 
-    @Query("SELECT j.result FROM Job j LEFT JOIN j.result WHERE j.id=:id")
+    @Query("SELECT j.result FROM Job j LEFT JOIN j.result WHERE j.id = :id")
     Optional<JobResult> findJobResultByJobId(UUID id);
+
+    @Modifying
+    @Query("UPDATE Job j SET j.status = :status WHERE j.id = :id")
+    void updateJobSetStatusTo(UUID id, Job.JobStatus status);
 
     // TODO verify
 //    @Query("UPDATE Job j SET j.status = :outdatedJobStatus WHERE CURRENT_TIMESTAMP > j.created")

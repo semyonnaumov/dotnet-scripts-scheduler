@@ -34,7 +34,7 @@ public class JobServiceImpl implements JobService {
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     @Override
     public JobCreationResult createOrGetJob(JobRequest jobRequest) {
-        LOGGER.debug("Job creation requested, job request {}", jobRequest);
+        LOGGER.debug("Creating job for request {}", jobRequest);
 
         validateJobRequest(jobRequest);
 
@@ -97,7 +97,7 @@ public class JobServiceImpl implements JobService {
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     @Override
     public boolean deleteJob(UUID id) {
-        LOGGER.debug("Job deletion requested, job {}", id);
+        LOGGER.debug("Deleting job {}", id);
 
         boolean jobExists = jobsRepository.existsById(id);
         if (!jobExists) {
@@ -119,7 +119,28 @@ public class JobServiceImpl implements JobService {
     @Transactional
     @Override
     public void onJobStarted(UUID id) {
+        LOGGER.debug("Processing job {} started message", id);
 
+        Job.JobStatus runningStatus = Job.JobStatus.RUNNING;
+        try {
+            Optional<Job.JobStatus> jobStatusOptional = jobsRepository.findJobStatusByJobId(id);
+            if (jobStatusOptional.isEmpty()) {
+                LOGGER.warn("Unable to set job {} status to {}: job not found", id, runningStatus);
+                return;
+            }
+
+            Job.JobStatus currentStatus = jobStatusOptional.get();
+            if (currentStatus == Job.JobStatus.PENDING) {
+                jobsRepository.updateJobSetStatusTo(id, runningStatus);
+                LOGGER.info("Set job {} status to {}", id, runningStatus);
+            } else {
+                LOGGER.warn("Unable to set job {} status to {}: current status is {}",
+                        id, runningStatus, currentStatus);
+            }
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to set job {} status to {}", id, runningStatus, e);
+            throw e;
+        }
     }
 
     @Transactional
