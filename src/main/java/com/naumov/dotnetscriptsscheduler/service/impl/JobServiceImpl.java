@@ -1,10 +1,7 @@
 package com.naumov.dotnetscriptsscheduler.service.impl;
 
 import com.naumov.dotnetscriptsscheduler.kafka.JobMessagesProducer;
-import com.naumov.dotnetscriptsscheduler.model.Job;
-import com.naumov.dotnetscriptsscheduler.model.JobCreationResult;
-import com.naumov.dotnetscriptsscheduler.model.JobRequest;
-import com.naumov.dotnetscriptsscheduler.model.JobResult;
+import com.naumov.dotnetscriptsscheduler.model.*;
 import com.naumov.dotnetscriptsscheduler.repository.JobsRepository;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
 import com.naumov.dotnetscriptsscheduler.service.exception.JobServiceException;
@@ -16,6 +13,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,7 +62,7 @@ public class JobServiceImpl implements JobService {
 
     private Job prepareJob(JobRequest jobRequest) {
         return Job.builder()
-                .status(Job.JobStatus.PENDING)
+                .status(JobStatus.PENDING)
                 .request(jobRequest)
                 .build();
     }
@@ -83,7 +81,7 @@ public class JobServiceImpl implements JobService {
 
     @Transactional
     @Override
-    public Optional<Job.JobStatus> findJobStatusByJobId(UUID id) {
+    public Optional<JobStatus> findJobStatusByJobId(UUID id) {
         return jobsRepository.findJobStatusByJobId(id);
     }
 
@@ -120,16 +118,16 @@ public class JobServiceImpl implements JobService {
     public void updateStartedJob(UUID id) {
         LOGGER.debug("Updating started job {}", id);
 
-        Job.JobStatus runningStatus = Job.JobStatus.RUNNING;
+        JobStatus runningStatus = JobStatus.RUNNING;
         try {
-            Optional<Job.JobStatus> jobStatusOptional = jobsRepository.findJobStatusByJobId(id);
+            Optional<JobStatus> jobStatusOptional = jobsRepository.findJobStatusByJobId(id);
             if (jobStatusOptional.isEmpty()) {
                 LOGGER.warn("Unable to update started job {}: job not found", id);
                 return;
             }
 
-            Job.JobStatus currentStatus = jobStatusOptional.get();
-            if (currentStatus == Job.JobStatus.PENDING) {
+            JobStatus currentStatus = jobStatusOptional.get();
+            if (currentStatus == JobStatus.PENDING) {
                 jobsRepository.updateJobSetStatusTo(id, runningStatus);
                 LOGGER.info("Set job {} status to {}", id, runningStatus);
             } else {
@@ -157,8 +155,8 @@ public class JobServiceImpl implements JobService {
             }
 
             Job savedJob = savedJobOptional.get();
-            Job.JobStatus currentStatus = savedJob.getStatus();
-            if (currentStatus == Job.JobStatus.PENDING || currentStatus == Job.JobStatus.RUNNING) {
+            JobStatus currentStatus = savedJob.getStatus();
+            if (currentStatus == JobStatus.PENDING || currentStatus == JobStatus.RUNNING) {
                 savedJob.setStatus(job.getStatus());
                 savedJob.setResult(job.getResult());
                 jobsRepository.save(savedJob);
@@ -172,5 +170,11 @@ public class JobServiceImpl implements JobService {
             LOGGER.error("Failed to update finished job {}", jobId, e);
             throw e;
         }
+    }
+
+    @Transactional
+    @Override
+    public int rejectLongLastingJobs(int jobTimeoutMs) {
+        return jobsRepository.rejectJobsRunningLongerThanJobTimeout(Duration.ofMillis(jobTimeoutMs));
     }
 }

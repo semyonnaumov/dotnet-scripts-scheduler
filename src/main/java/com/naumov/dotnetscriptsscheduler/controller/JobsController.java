@@ -8,6 +8,7 @@ import com.naumov.dotnetscriptsscheduler.model.Job;
 import com.naumov.dotnetscriptsscheduler.model.JobCreationResult;
 import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
+import com.naumov.dotnetscriptsscheduler.model.JobStatus;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -73,7 +74,7 @@ public class JobsController {
     @GetMapping("/{id}/status")
     public ResponseEntity<JobGetStatusResponse> getJobStatus(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job status request for job {}", jobId);
-        Optional<Job.JobStatus> jobStatusOptional = jobService.findJobStatusByJobId(jobId);
+        Optional<JobStatus> jobStatusOptional = jobService.findJobStatusByJobId(jobId);
 
         return jobStatusOptional.map(js -> ResponseEntity.status(HttpStatus.OK)
                         .body(dtoMapper.toJobGetStatusResponse(jobId, js)))

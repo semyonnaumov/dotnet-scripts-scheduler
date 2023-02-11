@@ -31,7 +31,7 @@ class KafkaDtoMapperTest {
         Job job = kafkaDtoMapper.fromJobFinishedMessage(jobFinishedMessage);
         assertNotNull(job);
         assertEquals(uuid, job.getId());
-        assertEquals(Job.JobStatus.FINISHED, job.getStatus());
+        assertEquals(com.naumov.dotnetscriptsscheduler.model.JobStatus.FINISHED, job.getStatus());
         assertNotNull(job.getResult());
 
         JobResult result = job.getResult();

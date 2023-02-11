@@ -24,10 +24,10 @@ public class KafkaDtoMapper {
 
         JobStatus jobMessageStatus = jobFinishedMessage.getStatus();
         if (jobMessageStatus == JobStatus.ACCEPTED) {
-            jobBuilder.status(Job.JobStatus.FINISHED)
+            jobBuilder.status(com.naumov.dotnetscriptsscheduler.model.JobStatus.FINISHED)
                     .result(fromJobFinishedMessageScriptResults(jobFinishedMessage.getScriptResults()));
         } else if (jobMessageStatus == JobStatus.REJECTED) {
-            jobBuilder.status(Job.JobStatus.REJECTED);
+            jobBuilder.status(com.naumov.dotnetscriptsscheduler.model.JobStatus.REJECTED);
         } else {
             throw new IllegalStateException("Unable to map " + JobFinishedMessage.class.getName() + " to " +
                     Job.class.getName() + " with status " + jobMessageStatus);

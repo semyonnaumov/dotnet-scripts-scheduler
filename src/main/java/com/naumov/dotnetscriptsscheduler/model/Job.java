@@ -45,11 +45,4 @@ public class Job {
                 ", creationOffsetDateTime=" + creationOffsetDateTime +
                 '}';
     }
-
-    public enum JobStatus {
-        PENDING,
-        RUNNING,
-        FINISHED,
-        REJECTED
-    }
 }

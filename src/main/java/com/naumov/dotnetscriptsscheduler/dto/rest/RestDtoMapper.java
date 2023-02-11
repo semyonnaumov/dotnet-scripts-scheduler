@@ -72,7 +72,7 @@ public class RestDtoMapper {
                 .build();
     }
 
-    public JobGetStatusResponse toJobGetStatusResponse(UUID jobId, Job.JobStatus jobStatus) {
+    public JobGetStatusResponse toJobGetStatusResponse(UUID jobId, com.naumov.dotnetscriptsscheduler.model.JobStatus jobStatus) {
         if (jobId == null && jobStatus == null) return null;
 
         return JobGetStatusResponse.builder()
@@ -118,13 +118,13 @@ public class RestDtoMapper {
                 .build();
     }
 
-    private JobStatus toJobStatus(Job.JobStatus status) {
+    private JobStatus toJobStatus(com.naumov.dotnetscriptsscheduler.model.JobStatus status) {
         if (status == null) return null;
 
         try {
             return JobStatus.valueOf(status.name());
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Unable to map " + Job.JobStatus.class.getName() + " to " +
+            throw new IllegalStateException("Unable to map " + com.naumov.dotnetscriptsscheduler.model.JobStatus.class.getName() + " to " +
                     JobStatus.class.getName() + " from value " + status);
         }
     }

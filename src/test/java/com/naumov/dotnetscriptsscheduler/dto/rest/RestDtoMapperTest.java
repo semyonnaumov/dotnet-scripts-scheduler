@@ -5,6 +5,7 @@ import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayloadConfig;
 import com.naumov.dotnetscriptsscheduler.dto.rest.rs.*;
 import com.naumov.dotnetscriptsscheduler.model.*;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
+import com.naumov.dotnetscriptsscheduler.model.JobStatus;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -115,7 +116,7 @@ class RestDtoMapperTest {
         Job job = Job.builder()
                 .id(uuid)
                 .request(jobRequest)
-                .status(Job.JobStatus.FINISHED)
+                .status(JobStatus.FINISHED)
                 .result(jobResult)
                 .build();
 
@@ -205,7 +206,7 @@ class RestDtoMapperTest {
     void testToJobGetStatusResponseRegular() {
         UUID uuid = UUID.fromString("7f000001-8637-1fc4-8186-374017c10000");
 
-        JobGetStatusResponse jobGetStatusResponse = dtoMapper.toJobGetStatusResponse(uuid, Job.JobStatus.FINISHED);
+        JobGetStatusResponse jobGetStatusResponse = dtoMapper.toJobGetStatusResponse(uuid, JobStatus.FINISHED);
         assertNotNull(jobGetStatusResponse);
         assertEquals(uuid, jobGetStatusResponse.getJobId());
         assertEquals(FINISHED, jobGetStatusResponse.getStatus());
