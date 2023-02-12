@@ -46,7 +46,7 @@ services:
 
   postgres:
     container_name: dss-postgres
-    image: postgres:15.1
+    image: postgres:15.2
     environment:
       POSTGRES_USER: dotnet-scripts-scheduler
       POSTGRES_PASSWORD: 1234
