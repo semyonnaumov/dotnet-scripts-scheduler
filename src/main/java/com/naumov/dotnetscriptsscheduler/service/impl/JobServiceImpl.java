@@ -45,7 +45,7 @@ public class JobServiceImpl implements JobService {
             Job newJob = prepareJob(jobRequest);
             Job savedJob = jobsRepository.saveAndFlush(newJob); // all associations saved here using cascade
             jobMessagesProducer.sendJobTaskMessageAsync(savedJob);
-            LOGGER.info("Created new job {}", jobRequest.getId());
+            LOGGER.info("Created new job {}", savedJob.getId());
 
             return JobCreationResult.ofNewJob(savedJob);
         } catch (RuntimeException e) {

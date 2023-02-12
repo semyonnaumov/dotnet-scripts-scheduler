@@ -28,7 +28,11 @@ public class PeriodicLongJobsCleanupService {
     )
     public void scheduleFixedRateWithInitialDelayTask() {
         int updatedJobsNumber = jobService.rejectLongLastingJobs(jobTimeoutMs);
-        LOGGER.info("Periodic long jobs cleanup: set {} number of jobs' status to {}",
-                updatedJobsNumber, JobStatus.REJECTED);
+        if (updatedJobsNumber > 0) {
+            LOGGER.info("Periodic long jobs cleanup: set {} number of jobs to {} status",
+                    updatedJobsNumber, JobStatus.REJECTED);
+        } else {
+            LOGGER.info("Periodic long jobs cleanup: no long lasting jobs found");
+        }
     }
 }
