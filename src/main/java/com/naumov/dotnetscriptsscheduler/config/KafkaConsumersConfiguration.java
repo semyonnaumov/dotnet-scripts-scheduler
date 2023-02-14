@@ -6,8 +6,10 @@ import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobStartedMessage;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.annotation.KafkaListenerConfigurer;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistrar;
@@ -35,6 +37,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
     }
 
     @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public Map<String, Object> commonConsumerProperties() {
         var props = new HashMap<String, Object>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBrokerUrl());
@@ -53,7 +56,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
 
     @Bean
     public ConsumerFactory<String, JobStartedMessage> jobStartedMessagesConsumerFactory() {
-        Map<String, Object> props = new HashMap<>(commonConsumerProperties());
+        Map<String, Object> props = commonConsumerProperties();
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobStartedMessage.class.getName());
 
         return new DefaultKafkaConsumerFactory<>(props);
@@ -61,7 +64,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
 
     @Bean
     public ConsumerFactory<String, JobFinishedMessage> jobFinishedMessagesConsumerFactory() {
-        Map<String, Object> props = new HashMap<>(commonConsumerProperties());
+        Map<String, Object> props = commonConsumerProperties();
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobFinishedMessage.class.getName());
 
         return new DefaultKafkaConsumerFactory<>(props);

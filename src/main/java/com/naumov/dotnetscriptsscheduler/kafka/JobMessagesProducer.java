@@ -39,9 +39,10 @@ public class JobMessagesProducer {
     public void sendJobTaskMessageAsync(Job job) {
         String topicName = getTopicName(job);
         JobTaskMessage jobTaskMessage = kafkaDtoMapper.toJobTaskMessage(job);
+        UUID jobId = job.getId();
 
-        LOGGER.debug("Sending job task message {} for job {}", jobTaskMessage, job.getId());
-        jobTaskKafkaTemplate.send(topicName, jobTaskMessage)
+        LOGGER.debug("Sending job task message {} for job {}", jobTaskMessage, jobId);
+        jobTaskKafkaTemplate.send(topicName, jobId.toString(), jobTaskMessage)
                 .thenAccept(res -> {
                     LOGGER.info("Sent task for job {} to topic {}", jobTaskMessage.getJobId(), topicName);
                 }).exceptionally(e -> {
