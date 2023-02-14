@@ -85,6 +85,43 @@ class JobMessagesProducerTest {
     }
 
     @Test
+    void sendJobTaskMessageAsyncMultipleAgentTypes() {
+        UUID jobId = UUID.randomUUID();
+        String prefix = "some-prefix-";
+        String workerType1 = "worker-type-1";
+        String workerType2 = "worker-type-2";
+
+        when(schedulerKafkaPropertiesMock.getJobsTopicPrefix()).thenReturn(prefix);
+        when(workerTypesServiceMock.workerExists(workerType1)).thenReturn(true);
+        when(workerTypesServiceMock.workerExists(workerType2)).thenReturn(true);
+        when(kafkaTemplateMock.send(anyString(), anyString(), any(JobTaskMessage.class)))
+                .thenReturn(new CompletableFuture<>());
+
+        JobRequestPayload jobRequestPayload = JobRequestPayload.builder()
+                .script("some script")
+                .agentType(workerType1)
+                .jobPayloadConfig(JobPayloadConfig.builder().build())
+                .build();
+
+        Job job = Job.builder()
+                .id(jobId)
+                .request(JobRequest.builder().payload(jobRequestPayload).build())
+                .build();
+
+        jobMessagesProducer.sendJobTaskMessageAsync(job);
+
+        job.getRequest().getPayload().setAgentType(workerType2);
+
+        jobMessagesProducer.sendJobTaskMessageAsync(job);
+
+        verify(workerTypesServiceMock, times(1)).workerExists(eq(workerType1));
+        verify(workerTypesServiceMock, times(1)).workerExists(eq(workerType2));
+        verify(schedulerKafkaPropertiesMock, times(2)).getJobsTopicPrefix();
+        verify(kafkaTemplateMock, times(1)).send(eq(prefix + workerType1), anyString(), any(JobTaskMessage.class));
+        verify(kafkaTemplateMock, times(1)).send(eq(prefix + workerType2), anyString(), any(JobTaskMessage.class));
+    }
+
+    @Test
     void sendJobTaskMessageAsyncWrongAgentType() {
         UUID jobId = UUID.randomUUID();
 
