@@ -1,13 +1,15 @@
 package com.naumov.dotnetscriptsscheduler.dto.kafka.cons;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import static com.naumov.dotnetscriptsscheduler.util.StringUtil.omitLongString;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public final class ScriptResults {
     @NotNull
     private JobCompletionStatus finishedWith;

@@ -16,12 +16,14 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistrar;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.util.backoff.FixedBackOff;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.net.SocketTimeoutException;
 
 @Configuration
 public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
@@ -38,8 +40,8 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public Map<String, Object> commonConsumerProperties() {
-        var props = new HashMap<String, Object>();
+    public CommonConsumerPropertiesWrapper commonConsumerProperties() {
+        var props = new CommonConsumerPropertiesWrapper();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBrokerUrl());
         props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getConsumerGroup());
         props.put(ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG, kafkaProperties.getReconnectBackoffMs());
@@ -56,18 +58,26 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
 
     @Bean
     public ConsumerFactory<String, JobStartedMessage> jobStartedMessagesConsumerFactory() {
-        Map<String, Object> props = commonConsumerProperties();
+        CommonConsumerPropertiesWrapper props = commonConsumerProperties();
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobStartedMessage.class.getName());
 
-        return new DefaultKafkaConsumerFactory<>(props);
+        return new DefaultKafkaConsumerFactory<>(props.toMap());
     }
 
     @Bean
     public ConsumerFactory<String, JobFinishedMessage> jobFinishedMessagesConsumerFactory() {
-        Map<String, Object> props = commonConsumerProperties();
+        CommonConsumerPropertiesWrapper props = commonConsumerProperties();
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobFinishedMessage.class.getName());
 
-        return new DefaultKafkaConsumerFactory<>(props);
+        return new DefaultKafkaConsumerFactory<>(props.toMap());
+    }
+
+    @Bean
+    public DefaultErrorHandler commonErrorHandler() {
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(new FixedBackOff(1000L, 1L));
+        errorHandler.addRetryableExceptions(SocketTimeoutException.class);
+        errorHandler.addNotRetryableExceptions(DeserializationException.class);
+        return errorHandler;
     }
 
     @Bean
@@ -78,6 +88,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
         factory.setConsumerFactory(jobStartedMessagesConsumerFactory());
         factory.setConcurrency(CONSUMER_CONCURRENCY);
         factory.getContainerProperties().setAckMode(CONSUMER_ACK_MODE);
+        factory.setCommonErrorHandler(commonErrorHandler());
 
         return factory;
     }
@@ -90,6 +101,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
         factory.setConsumerFactory(jobFinishedMessagesConsumerFactory());
         factory.setConcurrency(CONSUMER_CONCURRENCY);
         factory.getContainerProperties().setAckMode(CONSUMER_ACK_MODE);
+        factory.setCommonErrorHandler(commonErrorHandler());
 
         return factory;
     }

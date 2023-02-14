@@ -25,5 +25,6 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("scheduler.kafka.broker-url", kafka::getBootstrapServers);
+        registry.add("scheduler.kafka-admin.broker-url", kafka::getBootstrapServers);
     }
 }

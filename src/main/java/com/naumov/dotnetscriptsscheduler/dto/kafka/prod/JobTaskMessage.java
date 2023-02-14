@@ -1,8 +1,6 @@
 package com.naumov.dotnetscriptsscheduler.dto.kafka.prod;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -11,6 +9,8 @@ import static com.naumov.dotnetscriptsscheduler.util.StringUtil.omitLongString;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public final class JobTaskMessage {
     private UUID jobId;
     private String script;
