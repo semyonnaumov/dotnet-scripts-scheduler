@@ -74,7 +74,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
 
     @Bean
     public DefaultErrorHandler commonErrorHandler() {
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler(new FixedBackOff(1000L, 1L));
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(new FixedBackOff(100L, 1L));
         errorHandler.addRetryableExceptions(SocketTimeoutException.class);
         errorHandler.addNotRetryableExceptions(DeserializationException.class);
         return errorHandler;

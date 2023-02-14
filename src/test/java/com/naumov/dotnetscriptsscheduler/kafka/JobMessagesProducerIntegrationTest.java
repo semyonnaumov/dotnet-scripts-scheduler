@@ -52,7 +52,7 @@ class JobMessagesProducerIntegrationTest extends AbstractIntegrationTest {
     private BlockingQueue<ConsumerRecord<String, JobTaskMessage>> consumedMessages;
 
     @BeforeEach
-    public void setUp() {
+    public void setup() {
         consumedMessages = new LinkedBlockingQueue<>();
         workerType = workerTypesService.getAllWorkerTypes().stream().findFirst().orElseThrow(RuntimeException::new);
 

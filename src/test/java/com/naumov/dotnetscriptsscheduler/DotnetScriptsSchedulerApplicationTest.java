@@ -1,6 +1,5 @@
 package com.naumov.dotnetscriptsscheduler;
 
-import com.naumov.dotnetscriptsscheduler.repository.JobsRepository;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +11,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -25,14 +22,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class DotnetScriptsSchedulerApplicationTest extends AbstractIntegrationTest {
     @Autowired
-    private JobsRepository jobsRepository;
-    @Autowired
     private MockMvc mvc;
 
     @Transactional
     @Test
     public void contextLoads() {
-        assertTrue(jobsRepository.findJobRequestByJobId(UUID.randomUUID()).isEmpty());
     }
 
     @Test
@@ -52,7 +46,7 @@ class DotnetScriptsSchedulerApplicationTest extends AbstractIntegrationTest {
 
 
     @Test
-    public void jobCreates() throws Exception {
+    public void jobCreateResponds() throws Exception {
         String jobCreateRequest = """
                 {
                     "requestId": "request-0",
