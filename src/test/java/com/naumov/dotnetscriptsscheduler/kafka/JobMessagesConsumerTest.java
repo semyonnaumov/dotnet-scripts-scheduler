@@ -95,11 +95,12 @@ class JobMessagesConsumerTest {
 
         JobFinishedMessage jobFinishedMessage = JobFinishedMessage.builder()
                 .jobId(UUID.randomUUID())
+                .status(JobStatus.ACCEPTED)
                 .build();
 
         Acknowledgment ackMock = mock(Acknowledgment.class);
 
-        jobMessagesConsumer.onJobFinishedMessage(jobFinishedMessage, ackMock);
+        assertThrows(RuntimeException.class, () -> jobMessagesConsumer.onJobFinishedMessage(jobFinishedMessage, ackMock));
 
         verify(jobServiceMock, times(1)).updateFinishedJob(any());
         verify(ackMock, times(0)).acknowledge();
