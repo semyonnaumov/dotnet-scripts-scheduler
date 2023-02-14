@@ -117,8 +117,8 @@ class JobMessagesProducerTest {
         verify(workerTypesServiceMock, times(1)).workerExists(eq(workerType1));
         verify(workerTypesServiceMock, times(1)).workerExists(eq(workerType2));
         verify(schedulerKafkaPropertiesMock, times(2)).getJobsTopicPrefix();
-        verify(kafkaTemplateMock, times(1)).send(eq(prefix + workerType1), anyString(), any(JobTaskMessage.class));
-        verify(kafkaTemplateMock, times(1)).send(eq(prefix + workerType2), anyString(), any(JobTaskMessage.class));
+        verify(kafkaTemplateMock, times(1)).send(eq(prefix + workerType1), anyString(), any());
+        verify(kafkaTemplateMock, times(1)).send(eq(prefix + workerType2), anyString(), any());
     }
 
     @Test
@@ -144,7 +144,7 @@ class JobMessagesProducerTest {
         assertThrows(BadInputException.class, () -> jobMessagesProducer.sendJobTaskMessageAsync(job));
         verify(workerTypesServiceMock, times(1)).workerExists(anyString());
         verify(schedulerKafkaPropertiesMock, times(0)).getJobsTopicPrefix();
-        verify(kafkaTemplateMock, times(0)).send(anyString(), anyString(), any(JobTaskMessage.class));
+        verify(kafkaTemplateMock, times(0)).send(anyString(), anyString(), any());
     }
 
     @Test
@@ -169,6 +169,6 @@ class JobMessagesProducerTest {
         assertThrows(JobMessagesProducerException.class, () -> jobMessagesProducer.sendJobTaskMessageAsync(job));
         verify(workerTypesServiceMock, times(0)).workerExists(anyString());
         verify(schedulerKafkaPropertiesMock, times(0)).getJobsTopicPrefix();
-        verify(kafkaTemplateMock, times(0)).send(anyString(), anyString(), any(JobTaskMessage.class));
+        verify(kafkaTemplateMock, times(0)).send(anyString(), anyString(), any());
     }
 }
