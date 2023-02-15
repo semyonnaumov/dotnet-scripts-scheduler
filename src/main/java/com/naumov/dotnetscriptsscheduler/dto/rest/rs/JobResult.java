@@ -1,16 +1,18 @@
 package com.naumov.dotnetscriptsscheduler.dto.rest.rs;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import static com.naumov.dotnetscriptsscheduler.util.StringUtil.omitLongString;
 
-@Builder
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public final class JobResult {
-    private final JobCompletionStatus finishedWith;
-    private final String stdout;
-    private final String stderr;
+    private JobCompletionStatus finishedWith;
+    private String stdout;
+    private String stderr;
 
     @Override
     public String toString() {

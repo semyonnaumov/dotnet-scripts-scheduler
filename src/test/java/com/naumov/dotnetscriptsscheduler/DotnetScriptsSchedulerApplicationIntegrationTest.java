@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 
@@ -24,7 +23,6 @@ class DotnetScriptsSchedulerApplicationIntegrationTest extends AbstractIntegrati
     @Autowired
     private MockMvc mvc;
 
-    @Transactional
     @Test
     public void contextLoads() {
     }
@@ -52,7 +50,7 @@ class DotnetScriptsSchedulerApplicationIntegrationTest extends AbstractIntegrati
                     "requestId": "request-0",
                     "senderId": "sender-0",
                     "payload": {
-                        "script": "Console.WriteLine(\\"Hello from from job from sender-0\\");",
+                        "script": "Console.WriteLine(\\"Hello from from script\\");",
                         "agentType": "linux-amd64-dotnet-7"
                     }
                 }

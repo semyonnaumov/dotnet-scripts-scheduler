@@ -1,12 +1,14 @@
 package com.naumov.dotnetscriptsscheduler.dto.rest.rs;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
-@Builder
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public final class DefaultErrorResponse {
-    private final String message;
+    private String message;
 
     @Override
     public String toString() {

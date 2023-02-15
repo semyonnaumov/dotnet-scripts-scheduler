@@ -15,12 +15,10 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Optional;
@@ -30,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@Component
-@SpringBootTest
 @DirtiesContext
 class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     private static final long MESSAGE_WAITING_TIMEOUT_MS = 10000;
@@ -73,13 +69,14 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
 
         // when
         startedMessagesProducer.send(runningTopic, jobId.toString(), jobStartedMessage);
+
+        // then
         ArgumentCaptor<JobStartedMessage> messageCaptor = ArgumentCaptor.forClass(JobStartedMessage.class);
         verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .onJobStartedMessage(messageCaptor.capture(), any());
         verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .report(any());
 
-        // then
         JobStartedMessage message = messageCaptor.getValue();
         assertNotNull(message);
         assertEquals(jobId, message.getJobId());
@@ -89,19 +86,20 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void onJobStartedMessageForPendingJob() {
         // given
-        Job job = prepareJob(JobStatus.PENDING);
+        Job job = prepareAndSaveJob(JobStatus.PENDING);
         UUID jobId = job.getId();
         JobStartedMessage jobStartedMessage = prepareJobStartedMessage(jobId);
 
         // when
         startedMessagesProducer.send(runningTopic, jobId.toString(), jobStartedMessage);
+
+        // then
         ArgumentCaptor<JobStartedMessage> messageCaptor = ArgumentCaptor.forClass(JobStartedMessage.class);
         verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .onJobStartedMessage(messageCaptor.capture(), any());
         verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .report(any());
 
-        // then
         assertTrue(jobsRepository.findById(jobId).isPresent());
         assertEquals(JobStatus.RUNNING, jobsRepository.findById(jobId).get().getStatus());
     }
@@ -110,19 +108,20 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     @EnumSource(value = JobStatus.class, names = {"FINISHED", "REJECTED"})
     void onJobStartedMessageForFinishedOrRejectedJob(JobStatus jobStatus) {
         // given
-        Job job = prepareJob(jobStatus);
+        Job job = prepareAndSaveJob(jobStatus);
         UUID jobId = job.getId();
         JobStartedMessage jobStartedMessage = prepareJobStartedMessage(jobId);
 
         // when
         startedMessagesProducer.send(runningTopic, jobId.toString(), jobStartedMessage);
+
+        // then
         ArgumentCaptor<JobStartedMessage> messageCaptor = ArgumentCaptor.forClass(JobStartedMessage.class);
         verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .onJobStartedMessage(messageCaptor.capture(), any());
         verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .report(any());
 
-        // then
         assertTrue(jobsRepository.findById(jobId).isPresent());
         assertEquals(jobStatus, jobsRepository.findById(jobId).get().getStatus());
     }
@@ -140,13 +139,14 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
 
         // when
         finishedMessagesProducer.send(finishedTopic, jobId.toString(), jobFinishedMessage);
+
+        // then
         ArgumentCaptor<JobFinishedMessage> messageCaptor = ArgumentCaptor.forClass(JobFinishedMessage.class);
         verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .onJobFinishedMessage(messageCaptor.capture(), any());
         verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .report(any());
 
-        // then
         JobFinishedMessage message = messageCaptor.getValue();
         assertNotNull(message);
         assertEquals(jobId, message.getJobId());
@@ -157,19 +157,20 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     @EnumSource(value = JobStatus.class, names = {"PENDING", "RUNNING"})
     void onJobFinishedMessageForPendingOrRunningJob(JobStatus jobStatus) {
         // given
-        Job job = prepareJob(jobStatus);
+        Job job = prepareAndSaveJob(jobStatus);
         UUID jobId = job.getId();
         JobFinishedMessage jobFinishedMessage = prepareFinishedMessage(jobId);
 
         // when
         finishedMessagesProducer.send(finishedTopic, jobId.toString(), jobFinishedMessage);
+
+        // then
         ArgumentCaptor<JobFinishedMessage> messageCaptor = ArgumentCaptor.forClass(JobFinishedMessage.class);
         verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .onJobFinishedMessage(messageCaptor.capture(), any());
         verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .report(any());
 
-        // then
         Optional<Job> foundJobOptional = jobsRepository.findByIdFetchAll(jobId);
         assertTrue(foundJobOptional.isPresent());
         Job foundJob = foundJobOptional.get();
@@ -185,19 +186,20 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     @EnumSource(value = JobStatus.class, names = {"FINISHED", "REJECTED"})
     void onJobFinishedMessageForFinishedOrRejectedJob(JobStatus jobStatus) {
         // given
-        Job job = prepareJob(jobStatus);
+        Job job = prepareAndSaveJob(jobStatus);
         UUID jobId = job.getId();
         JobFinishedMessage jobFinishedMessage = prepareFinishedMessage(jobId);
 
         // when
         finishedMessagesProducer.send(finishedTopic, jobId.toString(), jobFinishedMessage);
+
+        // then
         ArgumentCaptor<JobFinishedMessage> messageCaptor = ArgumentCaptor.forClass(JobFinishedMessage.class);
         verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .onJobFinishedMessage(messageCaptor.capture(), any());
         verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .report(any());
 
-        // then
         Optional<Job> foundJobOptional = jobsRepository.findByIdFetchAll(jobId);
         assertTrue(foundJobOptional.isPresent());
         Job foundJob = foundJobOptional.get();
@@ -220,7 +222,7 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
                 .build();
     }
 
-    private Job prepareJob(JobStatus jobStatus) {
+    private Job prepareAndSaveJob(JobStatus jobStatus) {
         JobRequestPayload payload = JobRequestPayload.builder()
                 .script("script")
                 .agentType("linux-amd64-dotnet-7")

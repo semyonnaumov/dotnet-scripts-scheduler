@@ -1,10 +1,12 @@
 package com.naumov.dotnetscriptsscheduler.service.impl;
 
+import com.naumov.dotnetscriptsscheduler.exception.BadInputException;
 import com.naumov.dotnetscriptsscheduler.kafka.JobMessagesProducer;
 import com.naumov.dotnetscriptsscheduler.model.*;
 import com.naumov.dotnetscriptsscheduler.repository.JobsRepository;
 import com.naumov.dotnetscriptsscheduler.service.JobsService;
-import com.naumov.dotnetscriptsscheduler.service.exception.JobServiceException;
+import com.naumov.dotnetscriptsscheduler.service.WorkerTypesService;
+import com.naumov.dotnetscriptsscheduler.service.exception.JobsServiceException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +24,15 @@ public class JobsServiceImpl implements JobsService {
     private static final Logger LOGGER = LogManager.getLogger(JobsServiceImpl.class);
     private final JobsRepository jobsRepository;
     private final JobMessagesProducer jobMessagesProducer;
+    private final WorkerTypesService workerTypesService;
 
     @Autowired
-    public JobsServiceImpl(JobsRepository jobsRepository, JobMessagesProducer jobMessagesProducer) {
+    public JobsServiceImpl(JobsRepository jobsRepository,
+                           JobMessagesProducer jobMessagesProducer,
+                           WorkerTypesService workerTypesService) {
         this.jobsRepository = jobsRepository;
         this.jobMessagesProducer = jobMessagesProducer;
+        this.workerTypesService = workerTypesService;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
@@ -55,9 +61,19 @@ public class JobsServiceImpl implements JobsService {
     }
 
     private void validateJobRequest(JobRequest jobRequest) {
-        if (jobRequest == null) throw new JobServiceException("Cannot create job from null request");
-        if (jobRequest.getMessageId() == null) throw new JobServiceException("No message id in job request");
-        if (jobRequest.getId() != null) throw new JobServiceException("Job creation request cannot have an ID");
+        if (jobRequest == null || jobRequest.getMessageId() == null || jobRequest.getPayload() == null) {
+            throw new JobsServiceException("Job creation request must contain $.messageId and $.payload");
+        }
+
+        String agentType = jobRequest.getPayload().getAgentType();
+        if (!workerTypesService.workerExists(agentType)) {
+            throw new BadInputException("Wrong worker type " + agentType + " in job creation request, " +
+                    "available types are " + workerTypesService.getAllWorkerTypes());
+        }
+
+        if (jobRequest.getId() != null) {
+            throw new JobsServiceException("Job creation request cannot have an ID");
+        }
     }
 
     private Job prepareJob(JobRequest jobRequest) {

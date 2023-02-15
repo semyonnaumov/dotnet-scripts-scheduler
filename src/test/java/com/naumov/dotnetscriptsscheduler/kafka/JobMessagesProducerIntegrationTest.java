@@ -17,14 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
-import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.UUID;
@@ -34,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Component
-@SpringBootTest
 @DirtiesContext
 class JobMessagesProducerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
@@ -101,7 +97,7 @@ class JobMessagesProducerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void teardown() {
         jobTaskMessageListenerContainer.stop();
     }
 }

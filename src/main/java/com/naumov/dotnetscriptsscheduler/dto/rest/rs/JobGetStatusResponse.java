@@ -1,15 +1,17 @@
 package com.naumov.dotnetscriptsscheduler.dto.rest.rs;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.UUID;
 
-@Builder
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public final class JobGetStatusResponse {
-    private final UUID jobId;
-    private final JobStatus status;
+    private UUID jobId;
+    private JobStatus status;
 
     @Override
     public String toString() {
