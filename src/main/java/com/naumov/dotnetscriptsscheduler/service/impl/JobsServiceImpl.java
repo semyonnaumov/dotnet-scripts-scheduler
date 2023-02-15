@@ -3,7 +3,7 @@ package com.naumov.dotnetscriptsscheduler.service.impl;
 import com.naumov.dotnetscriptsscheduler.kafka.JobMessagesProducer;
 import com.naumov.dotnetscriptsscheduler.model.*;
 import com.naumov.dotnetscriptsscheduler.repository.JobsRepository;
-import com.naumov.dotnetscriptsscheduler.service.JobService;
+import com.naumov.dotnetscriptsscheduler.service.JobsService;
 import com.naumov.dotnetscriptsscheduler.service.exception.JobServiceException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,13 +18,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class JobServiceImpl implements JobService {
-    private static final Logger LOGGER = LogManager.getLogger(JobServiceImpl.class);
+public class JobsServiceImpl implements JobsService {
+    private static final Logger LOGGER = LogManager.getLogger(JobsServiceImpl.class);
     private final JobsRepository jobsRepository;
     private final JobMessagesProducer jobMessagesProducer;
 
     @Autowired
-    public JobServiceImpl(JobsRepository jobsRepository, JobMessagesProducer jobMessagesProducer) {
+    public JobsServiceImpl(JobsRepository jobsRepository, JobMessagesProducer jobMessagesProducer) {
         this.jobsRepository = jobsRepository;
         this.jobMessagesProducer = jobMessagesProducer;
     }

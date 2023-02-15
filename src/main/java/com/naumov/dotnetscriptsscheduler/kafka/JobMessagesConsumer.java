@@ -4,7 +4,7 @@ import com.naumov.dotnetscriptsscheduler.dto.kafka.KafkaDtoMapper;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobFinishedMessage;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobMessage;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobStartedMessage;
-import com.naumov.dotnetscriptsscheduler.service.JobService;
+import com.naumov.dotnetscriptsscheduler.service.JobsService;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,15 +20,15 @@ import java.util.UUID;
 @Component
 public class JobMessagesConsumer {
     private static final Logger LOGGER = LogManager.getLogger(JobMessagesConsumer.class);
-    private final JobService jobService;
+    private final JobsService jobsService;
     private final KafkaDtoMapper kafkaDtoMapper;
     private final Optional<Reporter<JobMessage>> messageProcessedReporter;
 
     @Autowired
-    public JobMessagesConsumer(JobService jobService,
+    public JobMessagesConsumer(JobsService jobsService,
                                KafkaDtoMapper kafkaDtoMapper,
                                Optional<Reporter<JobMessage>> messageProcessedReporter) {
-        this.jobService = jobService;
+        this.jobsService = jobsService;
         this.kafkaDtoMapper = kafkaDtoMapper;
         this.messageProcessedReporter = messageProcessedReporter;
     }
@@ -42,7 +42,7 @@ public class JobMessagesConsumer {
         UUID jobId = jobStartedMessage.getJobId();
         LOGGER.info("Received job {} started message", jobId);
         try {
-            jobService.updateStartedJob(jobId);
+            jobsService.updateStartedJob(jobId);
             LOGGER.info("Processed job {} started message", jobId);
             onJobMessageProcessed(jobStartedMessage);
             ack.acknowledge();
@@ -61,7 +61,7 @@ public class JobMessagesConsumer {
         UUID jobId = jobFinishedMessage.getJobId();
         LOGGER.info("Received job {} finished message", jobId);
         try {
-            jobService.updateFinishedJob(kafkaDtoMapper.fromJobFinishedMessage(jobFinishedMessage));
+            jobsService.updateFinishedJob(kafkaDtoMapper.fromJobFinishedMessage(jobFinishedMessage));
             LOGGER.info("Processed job {} finished message", jobId);
             onJobMessageProcessed(jobFinishedMessage);
             ack.acknowledge();

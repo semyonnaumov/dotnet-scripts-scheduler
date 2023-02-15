@@ -9,7 +9,7 @@ import com.naumov.dotnetscriptsscheduler.model.JobCreationResult;
 import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 import com.naumov.dotnetscriptsscheduler.model.JobStatus;
-import com.naumov.dotnetscriptsscheduler.service.JobService;
+import com.naumov.dotnetscriptsscheduler.service.JobsService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -34,19 +34,19 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Validated
 public class JobsController {
     private static final Logger LOGGER = LogManager.getLogger(JobsController.class);
-    private final JobService jobService;
+    private final JobsService jobsService;
     private final RestDtoMapper dtoMapper;
 
     @Autowired
-    public JobsController(JobService jobService, RestDtoMapper restDtoMapper) {
-        this.jobService = jobService;
+    public JobsController(JobsService jobsService, RestDtoMapper restDtoMapper) {
+        this.jobsService = jobsService;
         this.dtoMapper = restDtoMapper;
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<JobCreateResponse> createJob(@Valid @RequestBody JobCreateRequest jobCreateRequest) {
         LOGGER.info("Received job creation request {}", jobCreateRequest.getRequestId());
-        JobCreationResult jobCreationResult = jobService.createOrGetJob(dtoMapper.fromJobCreateRequest(jobCreateRequest));
+        JobCreationResult jobCreationResult = jobsService.createOrGetJob(dtoMapper.fromJobCreateRequest(jobCreateRequest));
         HttpStatus responseStatus = jobCreationResult.isCreated() ? HttpStatus.CREATED : HttpStatus.OK;
 
         return ResponseEntity.status(responseStatus).body(dtoMapper.toJobCreateResponse(jobCreationResult.getJob()));
@@ -55,7 +55,7 @@ public class JobsController {
     @GetMapping("/{id}")
     public ResponseEntity<JobGetResponse> getJob(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received full job info request for job {}", jobId);
-        Optional<Job> jobOptional = jobService.findJob(jobId);
+        Optional<Job> jobOptional = jobsService.findJob(jobId);
 
         return jobOptional.map(job -> ResponseEntity.status(HttpStatus.OK).body(dtoMapper.toJobGetResponse(job)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -64,7 +64,7 @@ public class JobsController {
     @GetMapping("/{id}/request")
     public ResponseEntity<JobGetRequestResponse> getJobRequest(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job request request for job {}", jobId);
-        Optional<JobRequest> jobRequestOptional = jobService.findJobRequestByJobId(jobId);
+        Optional<JobRequest> jobRequestOptional = jobsService.findJobRequestByJobId(jobId);
 
         return jobRequestOptional.map(jr -> ResponseEntity.status(HttpStatus.OK)
                         .body(dtoMapper.toJobGetRequestResponse(jobId, jr)))
@@ -74,7 +74,7 @@ public class JobsController {
     @GetMapping("/{id}/status")
     public ResponseEntity<JobGetStatusResponse> getJobStatus(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job status request for job {}", jobId);
-        Optional<JobStatus> jobStatusOptional = jobService.findJobStatusByJobId(jobId);
+        Optional<JobStatus> jobStatusOptional = jobsService.findJobStatusByJobId(jobId);
 
         return jobStatusOptional.map(js -> ResponseEntity.status(HttpStatus.OK)
                         .body(dtoMapper.toJobGetStatusResponse(jobId, js)))
@@ -84,7 +84,7 @@ public class JobsController {
     @GetMapping("/{id}/result")
     public ResponseEntity<JobGetResultResponse> getJobResult(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job result request for job {}", jobId);
-        Optional<JobResult> jobResultOptional = jobService.findJobResultByJobId(jobId);
+        Optional<JobResult> jobResultOptional = jobsService.findJobResultByJobId(jobId);
 
         return jobResultOptional.map(jr -> ResponseEntity.status(HttpStatus.OK)
                         .body(dtoMapper.toJobGetResultResponse(jobId, jr)))
@@ -94,7 +94,7 @@ public class JobsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteJob(@NotNull @PathVariable("id") UUID jobId) {
         LOGGER.info("Received job deletion request for job {}", jobId);
-        if (jobService.deleteJob(jobId)) return ResponseEntity.status(HttpStatus.OK).build();
+        if (jobsService.deleteJob(jobId)) return ResponseEntity.status(HttpStatus.OK).build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }

@@ -1,7 +1,7 @@
 package com.naumov.dotnetscriptsscheduler.scheduled;
 
 import com.naumov.dotnetscriptsscheduler.model.JobStatus;
-import com.naumov.dotnetscriptsscheduler.service.JobService;
+import com.naumov.dotnetscriptsscheduler.service.JobsService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +12,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class PeriodicLongJobsCleanupService {
     private static final Logger LOGGER = LogManager.getLogger(PeriodicLongJobsCleanupService.class);
-    private final JobService jobService;
+    private final JobsService jobsService;
     private final int jobTimeoutMs;
 
     @Autowired
-    public PeriodicLongJobsCleanupService(JobService jobService,
+    public PeriodicLongJobsCleanupService(JobsService jobsService,
                                           @Value("${scheduler.jobs.rejected-timeout-ms}") int jobTimeoutMs) {
-        this.jobService = jobService;
+        this.jobsService = jobsService;
         this.jobTimeoutMs = jobTimeoutMs;
     }
 
@@ -28,7 +28,7 @@ public class PeriodicLongJobsCleanupService {
     )
     public void scheduleFixedRateWithInitialDelayTask() {
         try {
-            int updatedJobsNumber = jobService.rejectLongLastingJobs(jobTimeoutMs);
+            int updatedJobsNumber = jobsService.rejectLongLastingJobs(jobTimeoutMs);
             if (updatedJobsNumber > 0) {
                 LOGGER.info("Periodic long jobs cleanup: set {} number of jobs to {} status",
                         updatedJobsNumber, JobStatus.REJECTED);

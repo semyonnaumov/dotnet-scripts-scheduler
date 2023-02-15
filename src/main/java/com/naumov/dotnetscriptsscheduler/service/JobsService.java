@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * Service, responsible for jobs manipulation.
  */
-public interface JobService {
+public interface JobsService {
 
     /**
      * Creates new job from {@code jobRequest} or finds existing job with the same {@code jobRequest.messageId}.
