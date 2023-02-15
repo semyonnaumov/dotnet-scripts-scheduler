@@ -37,6 +37,7 @@ public class JobMessagesConsumer {
         LOGGER.info("Received job {} started message", jobId);
         try {
             jobService.updateStartedJob(jobId);
+            LOGGER.info("Processed job {} started message", jobId);
             ack.acknowledge();
         } catch (RuntimeException e) {
             LOGGER.error("Failed to process job {} started message", jobStartedMessage);
@@ -54,6 +55,7 @@ public class JobMessagesConsumer {
         LOGGER.info("Received job {} finished message", jobId);
         try {
             jobService.updateFinishedJob(kafkaDtoMapper.fromJobFinishedMessage(jobFinishedMessage));
+            LOGGER.info("Processed job {} finished message", jobId);
             ack.acknowledge();
         } catch (RuntimeException e) {
             LOGGER.error("Failed to process job {} finished message", jobFinishedMessage);
