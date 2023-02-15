@@ -117,6 +117,29 @@ class JobsControllerTestIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void createJobRequestValidationWorks() throws Exception {
+        // given
+        JobCreateRequest jobCreateRequest = prepareJobCreateRequest(null,
+                null, null, null, null);
+        MockHttpServletRequestBuilder jobCreationRequest = post(JOBS_PATH)
+                .content(objectMapper.writeValueAsString(jobCreateRequest))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        // when
+        mvc.perform(jobCreationRequest)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", notNullValue()));
+
+        // then
+        // --- job not saved
+        assertEquals(0 ,jobsRepository.count());
+
+        // --- message not sent
+        assertNull(consumedMessages.poll(10, TimeUnit.SECONDS));
+    }
+
+    @Test
     void createJobJobNotExists() throws Exception {
         // given
         JobCreateRequest jobCreateRequest = prepareJobCreateRequest(REQUEST_ID,
