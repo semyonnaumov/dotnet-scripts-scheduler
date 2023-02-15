@@ -1,7 +1,7 @@
 package com.naumov.dotnetscriptsscheduler.kafka;
 
 import com.naumov.dotnetscriptsscheduler.AbstractIntegrationTest;
-import com.naumov.dotnetscriptsscheduler.config.CommonConsumerPropertiesWrapper;
+import com.naumov.dotnetscriptsscheduler.config.KafkaPropertyMapWrapper;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.prod.JobConfig;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.prod.JobTaskMessage;
 import com.naumov.dotnetscriptsscheduler.model.Job;
@@ -15,6 +15,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -38,7 +39,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @DirtiesContext
 class JobMessagesProducerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
-    private CommonConsumerPropertiesWrapper props;
+    @Qualifier("commonConsumerProperties")
+    private KafkaPropertyMapWrapper consumerProps;
     private String workerType;
     @Value("${scheduler.kafka.jobs-topic-prefix}")
     private String jobsTopicPrefix;
@@ -58,10 +60,10 @@ class JobMessagesProducerIntegrationTest extends AbstractIntegrationTest {
 
         String jobsTaskTopic = jobsTopicPrefix + workerType;
         ContainerProperties containerProperties = new ContainerProperties(jobsTaskTopic);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobTaskMessage.class.getName());
+        consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
+        consumerProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobTaskMessage.class.getName());
 
-        DefaultKafkaConsumerFactory<String, JobTaskMessage> consumerFactory = new DefaultKafkaConsumerFactory<>(props.toMap());
+        var consumerFactory = new DefaultKafkaConsumerFactory<>(consumerProps.toMap());
 
         jobTaskMessageListenerContainer = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
         jobTaskMessageListenerContainer.setupMessageListener((MessageListener<String, JobTaskMessage>) record -> consumedMessages.add(record));
