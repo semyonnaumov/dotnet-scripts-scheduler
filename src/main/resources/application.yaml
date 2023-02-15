@@ -26,8 +26,8 @@ scheduler:
 spring:
   datasource:
     url: jdbc:postgresql://${SCHEDULER_POSTGRES_URL:localhost:5432}/dotnet-scripts-scheduler
-    username: dotnet-scripts-scheduler
-    password: 1234
+    username: ${POSTGRES_USER:dotnet-scripts-scheduler}
+    password: ${POSTGRES_PASSWORD:1234}
     hikari:
       maximum-pool-size: 12
       minimum-idle: 1
