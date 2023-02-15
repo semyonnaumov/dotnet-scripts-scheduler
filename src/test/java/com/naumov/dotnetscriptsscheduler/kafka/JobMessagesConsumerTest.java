@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.kafka.support.Acknowledgment;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,7 +24,7 @@ class JobMessagesConsumerTest {
     @BeforeEach
     public void setup() {
         jobServiceMock = mock(JobService.class);
-        jobMessagesConsumer = new JobMessagesConsumer(jobServiceMock, kafkaDtoMapper);
+        jobMessagesConsumer = new JobMessagesConsumer(jobServiceMock, kafkaDtoMapper, Optional.empty());
     }
 
     @Test

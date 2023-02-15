@@ -70,7 +70,7 @@ public class JobServiceImpl implements JobService {
     @Transactional(readOnly = true)
     @Override
     public Optional<Job> findJob(UUID id) {
-        return jobsRepository.findById(id);
+        return jobsRepository.findByIdFetchAll(id);
     }
 
     @Transactional(readOnly = true)

@@ -11,7 +11,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public final class JobFinishedMessage {
+public final class JobFinishedMessage implements JobMessage {
     @NotNull
     private UUID jobId;
     @NotNull

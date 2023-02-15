@@ -4,11 +4,9 @@ import com.naumov.dotnetscriptsscheduler.model.Job;
 import com.naumov.dotnetscriptsscheduler.model.JobRequest;
 import com.naumov.dotnetscriptsscheduler.model.JobResult;
 import com.naumov.dotnetscriptsscheduler.model.JobStatus;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +21,12 @@ public interface JobsRepository extends JpaRepository<Job, UUID> {
 
     Optional<Job> findByRequestMessageId(String messageId);
 
-    @Override
-    @NonNull
-    @EntityGraph(attributePaths = {"request", "request.payload", "result"})
-    Optional<Job> findById(@NonNull UUID id);
+    @Query("FROM Job j " +
+            "LEFT JOIN FETCH j.request " +
+            "LEFT JOIN FETCH j.request.payload " +
+            "LEFT JOIN FETCH j.result " +
+            "WHERE j.id = :id")
+    Optional<Job> findByIdFetchAll(UUID id);
 
     @Query("SELECT j.request FROM Job j LEFT JOIN j.request WHERE j.id = :id")
     Optional<JobRequest> findJobRequestByJobId(UUID id);

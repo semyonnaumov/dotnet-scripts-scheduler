@@ -10,7 +10,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public final class JobStartedMessage {
+public final class JobStartedMessage implements JobMessage {
     @NotNull
     private UUID jobId;
 

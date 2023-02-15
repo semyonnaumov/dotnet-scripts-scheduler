@@ -2,6 +2,7 @@ package com.naumov.dotnetscriptsscheduler.kafka;
 
 import com.naumov.dotnetscriptsscheduler.dto.kafka.KafkaDtoMapper;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobFinishedMessage;
+import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobMessage;
 import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobStartedMessage;
 import com.naumov.dotnetscriptsscheduler.service.JobService;
 import jakarta.validation.Valid;
@@ -13,6 +14,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -20,11 +22,15 @@ public class JobMessagesConsumer {
     private static final Logger LOGGER = LogManager.getLogger(JobMessagesConsumer.class);
     private final JobService jobService;
     private final KafkaDtoMapper kafkaDtoMapper;
+    private final Optional<Reporter<JobMessage>> messageProcessedReporter;
 
     @Autowired
-    public JobMessagesConsumer(JobService jobService, KafkaDtoMapper kafkaDtoMapper) {
+    public JobMessagesConsumer(JobService jobService,
+                               KafkaDtoMapper kafkaDtoMapper,
+                               Optional<Reporter<JobMessage>> messageProcessedReporter) {
         this.jobService = jobService;
         this.kafkaDtoMapper = kafkaDtoMapper;
+        this.messageProcessedReporter = messageProcessedReporter;
     }
 
     @KafkaListener(
@@ -38,6 +44,7 @@ public class JobMessagesConsumer {
         try {
             jobService.updateStartedJob(jobId);
             LOGGER.info("Processed job {} started message", jobId);
+            onJobMessageProcessed(jobStartedMessage);
             ack.acknowledge();
         } catch (RuntimeException e) {
             LOGGER.error("Failed to process job {} started message", jobStartedMessage);
@@ -56,10 +63,15 @@ public class JobMessagesConsumer {
         try {
             jobService.updateFinishedJob(kafkaDtoMapper.fromJobFinishedMessage(jobFinishedMessage));
             LOGGER.info("Processed job {} finished message", jobId);
+            onJobMessageProcessed(jobFinishedMessage);
             ack.acknowledge();
         } catch (RuntimeException e) {
             LOGGER.error("Failed to process job {} finished message", jobFinishedMessage);
             throw e;
         }
+    }
+
+    private void onJobMessageProcessed(JobMessage jobMessage) {
+        messageProcessedReporter.ifPresent(r -> r.report(jobMessage));
     }
 }
