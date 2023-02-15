@@ -1,5 +1,9 @@
 package com.naumov.dotnetscriptsscheduler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobCreateRequest;
+import com.naumov.dotnetscriptsscheduler.dto.rest.rq.JobRequestPayload;
+import com.naumov.dotnetscriptsscheduler.service.WorkerTypesService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-
-import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -22,6 +24,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class DotnetScriptsSchedulerApplicationIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private WorkerTypesService workerTypesService;
 
     @Test
     public void contextLoads() {
@@ -45,19 +51,19 @@ class DotnetScriptsSchedulerApplicationIntegrationTest extends AbstractIntegrati
 
     @Test
     public void jobCreateResponds() throws Exception {
-        String jobCreateRequest = """
-                {
-                    "requestId": "request-0",
-                    "senderId": "sender-0",
-                    "payload": {
-                        "script": "Console.WriteLine(\\"Hello from from script\\");",
-                        "agentType": "linux-amd64-dotnet-7"
-                    }
-                }
-                """;
+        JobRequestPayload payload = JobRequestPayload.builder()
+                .script("Console.WriteLine(\"Hello from from script\");")
+                .agentType(workerTypesService.getDefaultWorkerType())
+                .build();
+
+        JobCreateRequest jobCreateRequest = JobCreateRequest.builder()
+                .requestId("request-0")
+                .senderId("sender-0")
+                .payload(payload)
+                .build();
 
         MockHttpServletRequestBuilder jobCreationRequest = post("/jobs")
-                .content(jobCreateRequest.getBytes(StandardCharsets.UTF_8))
+                .content(objectMapper.writeValueAsString(jobCreateRequest))
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(jobCreationRequest)

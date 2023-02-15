@@ -26,7 +26,7 @@ public class PeriodicLongJobsCleanupService {
             initialDelayString = "${scheduler.jobs.rejected-update-period-ms}",
             fixedDelayString = "${scheduler.jobs.rejected-update-period-ms}"
     )
-    public void scheduleFixedRateWithInitialDelayTask() {
+    public void rejectLongLastingJobs() {
         try {
             int updatedJobsNumber = jobsService.rejectLongLastingJobs(jobTimeoutMs);
             if (updatedJobsNumber > 0) {

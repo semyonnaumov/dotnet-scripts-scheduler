@@ -37,7 +37,7 @@ class JobMessagesProducerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     @Qualifier("commonConsumerProperties")
     private KafkaPropertyMapWrapper consumerProps;
-    private String workerType;
+    private String defaultWorkerType;
     @Value("${scheduler.kafka.jobs-topic-prefix}")
     private String jobsTopicPrefix;
     @Value("${scheduler.kafka-admin.jobs-topics-partitions}")
@@ -52,9 +52,9 @@ class JobMessagesProducerIntegrationTest extends AbstractIntegrationTest {
     @BeforeEach
     public void setup() {
         consumedMessages = new LinkedBlockingQueue<>();
-        workerType = workerTypesService.getAllWorkerTypes().stream().findFirst().orElseThrow(RuntimeException::new);
+        defaultWorkerType = workerTypesService.getDefaultWorkerType();
 
-        String jobsTaskTopic = jobsTopicPrefix + workerType;
+        String jobsTaskTopic = jobsTopicPrefix + defaultWorkerType;
         ContainerProperties containerProperties = new ContainerProperties(jobsTaskTopic);
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
         consumerProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobTaskMessage.class.getName());
@@ -73,7 +73,7 @@ class JobMessagesProducerIntegrationTest extends AbstractIntegrationTest {
         UUID jobId = UUID.randomUUID();
         JobRequestPayload jobRequestPayload = JobRequestPayload.builder()
                 .script("some script")
-                .agentType(workerType)
+                .agentType(defaultWorkerType)
                 .jobPayloadConfig(JobPayloadConfig.builder().nugetConfigXml("<config />").build())
                 .build();
 

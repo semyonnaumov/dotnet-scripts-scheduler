@@ -1,6 +1,6 @@
 package com.naumov.dotnetscriptsscheduler.service;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Simple service, used to provide available worker types.
@@ -10,9 +10,9 @@ public interface WorkerTypesService {
     /**
      * Returns the set of all worker type names.
      *
-     * @return set with types
+     * @return list with types
      */
-    Set<String> getAllWorkerTypes();
+    List<String> getAllWorkerTypes();
 
     /**
      * Checks whether the {@code workerType} exists among all available worker types.
@@ -21,4 +21,11 @@ public interface WorkerTypesService {
      * @return check result
      */
     boolean workerExists(String workerType);
+
+    /**
+     * Returns default worker type.
+     *
+     * @return default worker type
+     */
+    String getDefaultWorkerType();
 }

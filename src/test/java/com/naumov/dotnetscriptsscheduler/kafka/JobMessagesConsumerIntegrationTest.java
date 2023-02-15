@@ -6,6 +6,7 @@ import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.*;
 import com.naumov.dotnetscriptsscheduler.model.*;
 import com.naumov.dotnetscriptsscheduler.model.JobStatus;
 import com.naumov.dotnetscriptsscheduler.repository.JobsRepository;
+import com.naumov.dotnetscriptsscheduler.service.WorkerTypesService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,8 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     private KafkaTemplate<String, JobFinishedMessage> finishedMessagesProducer;
     @Autowired
     private JobsRepository jobsRepository;
+    @Autowired
+    private WorkerTypesService workerTypesService;
     @SpyBean
     private JobMessagesConsumer jobMessagesConsumerSpy;
     @MockBean
@@ -225,7 +228,7 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     private Job prepareAndSaveJob(JobStatus jobStatus) {
         JobRequestPayload payload = JobRequestPayload.builder()
                 .script("script")
-                .agentType("linux-amd64-dotnet-7")
+                .agentType(workerTypesService.getDefaultWorkerType())
                 .build();
 
         JobRequest jobRequest = JobRequest.builder()
