@@ -10,6 +10,8 @@ import com.naumov.dotnetscriptsscheduler.repository.JobsRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -109,6 +111,33 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(JobStatus.RUNNING, jobsRepository.findById(jobId).get().getStatus());
     }
 
+    @ParameterizedTest
+    @EnumSource(value = JobStatus.class, names = {"FINISHED", "REJECTED"})
+    void onJobStartedMessageForFinishedOrRejectedJob(JobStatus jobStatus) {
+        // given
+        Job job = prepareJob(jobStatus);
+        jobId = job.getId();
+        JobStartedMessage jobTaskMessage = JobStartedMessage.builder().jobId(jobId).build();
+
+        // when
+        startedMessagesProducer.send(runningTopic, jobId.toString(), jobTaskMessage);
+        ArgumentCaptor<JobStartedMessage> messageCaptor = ArgumentCaptor.forClass(JobStartedMessage.class);
+        verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
+                .onJobStartedMessage(messageCaptor.capture(), any());
+        verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
+                .report(any());
+
+        // then
+        assertTrue(jobsRepository.findById(jobId).isPresent());
+        assertEquals(jobStatus, jobsRepository.findById(jobId).get().getStatus());
+    }
+
+    // TODO complete
+
+    @Test
+    void onJobFinishedMessage() {
+    }
+
     private Job prepareJob(JobStatus jobStatus) {
         JobRequestPayload payload = JobRequestPayload.builder()
                 .script("script")
@@ -127,11 +156,5 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         return jobsRepository.saveAndFlush(job);
-    }
-
-    // TODO complete
-
-    @Test
-    void onJobFinishedMessage() {
     }
 }
