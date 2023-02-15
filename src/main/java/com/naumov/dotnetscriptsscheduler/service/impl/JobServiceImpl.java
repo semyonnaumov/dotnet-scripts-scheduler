@@ -67,25 +67,25 @@ public class JobServiceImpl implements JobService {
                 .build();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Optional<Job> findJob(UUID id) {
         return jobsRepository.findById(id);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Optional<JobRequest> findJobRequestByJobId(UUID id) {
         return jobsRepository.findJobRequestByJobId(id);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Optional<JobStatus> findJobStatusByJobId(UUID id) {
         return jobsRepository.findJobStatusByJobId(id);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Optional<JobResult> findJobResultByJobId(UUID id) {
         return jobsRepository.findJobResultByJobId(id);
@@ -113,7 +113,7 @@ public class JobServiceImpl implements JobService {
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
     @Override
     public void updateStartedJob(UUID id) {
         LOGGER.debug("Updating started job {}", id);
@@ -141,7 +141,7 @@ public class JobServiceImpl implements JobService {
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
     @Override
     public void updateFinishedJob(Job job) {
         UUID jobId = job.getId();
