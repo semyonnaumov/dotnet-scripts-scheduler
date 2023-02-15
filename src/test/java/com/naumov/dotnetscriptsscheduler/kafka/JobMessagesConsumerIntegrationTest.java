@@ -2,10 +2,9 @@ package com.naumov.dotnetscriptsscheduler.kafka;
 
 import com.naumov.dotnetscriptsscheduler.AbstractIntegrationTest;
 import com.naumov.dotnetscriptsscheduler.config.KafkaPropertyMapWrapper;
-import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobFinishedMessage;
-import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobMessage;
-import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobStartedMessage;
+import com.naumov.dotnetscriptsscheduler.dto.kafka.cons.*;
 import com.naumov.dotnetscriptsscheduler.model.*;
+import com.naumov.dotnetscriptsscheduler.model.JobStatus;
 import com.naumov.dotnetscriptsscheduler.repository.JobsRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +23,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,8 +51,6 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     @MockBean
     private Reporter<JobMessage> jobMessageReporterMock;
 
-    private UUID jobId;
-
     @BeforeEach
     public void setup() {
         assertEquals(0, jobsRepository.count());
@@ -70,12 +68,11 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void onJobStartedMessageForNotExistingJob() {
         // given
-        jobId = UUID.randomUUID();
-        JobStartedMessage jobTaskMessage = JobStartedMessage.builder().jobId(jobId).build();
-        assertEquals(0, jobsRepository.count());
+        UUID jobId = UUID.randomUUID();
+        JobStartedMessage jobStartedMessage = prepareJobStartedMessage(jobId);
 
         // when
-        startedMessagesProducer.send(runningTopic, jobId.toString(), jobTaskMessage);
+        startedMessagesProducer.send(runningTopic, jobId.toString(), jobStartedMessage);
         ArgumentCaptor<JobStartedMessage> messageCaptor = ArgumentCaptor.forClass(JobStartedMessage.class);
         verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .onJobStartedMessage(messageCaptor.capture(), any());
@@ -93,13 +90,11 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     void onJobStartedMessageForPendingJob() {
         // given
         Job job = prepareJob(JobStatus.PENDING);
-        jobId = job.getId();
-        JobStartedMessage jobTaskMessage = JobStartedMessage.builder()
-                .jobId(jobId)
-                .build();
+        UUID jobId = job.getId();
+        JobStartedMessage jobStartedMessage = prepareJobStartedMessage(jobId);
 
         // when
-        startedMessagesProducer.send(runningTopic, jobId.toString(), jobTaskMessage);
+        startedMessagesProducer.send(runningTopic, jobId.toString(), jobStartedMessage);
         ArgumentCaptor<JobStartedMessage> messageCaptor = ArgumentCaptor.forClass(JobStartedMessage.class);
         verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .onJobStartedMessage(messageCaptor.capture(), any());
@@ -116,11 +111,11 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
     void onJobStartedMessageForFinishedOrRejectedJob(JobStatus jobStatus) {
         // given
         Job job = prepareJob(jobStatus);
-        jobId = job.getId();
-        JobStartedMessage jobTaskMessage = JobStartedMessage.builder().jobId(jobId).build();
+        UUID jobId = job.getId();
+        JobStartedMessage jobStartedMessage = prepareJobStartedMessage(jobId);
 
         // when
-        startedMessagesProducer.send(runningTopic, jobId.toString(), jobTaskMessage);
+        startedMessagesProducer.send(runningTopic, jobId.toString(), jobStartedMessage);
         ArgumentCaptor<JobStartedMessage> messageCaptor = ArgumentCaptor.forClass(JobStartedMessage.class);
         verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
                 .onJobStartedMessage(messageCaptor.capture(), any());
@@ -132,10 +127,97 @@ class JobMessagesConsumerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(jobStatus, jobsRepository.findById(jobId).get().getStatus());
     }
 
-    // TODO complete
+    private JobStartedMessage prepareJobStartedMessage(UUID jobId) {
+        return JobStartedMessage.builder().jobId(jobId).build();
+    }
 
     @Test
-    void onJobFinishedMessage() {
+    void onJobFinishedMessageForNotExistingJob() {
+        // given
+        UUID jobId = UUID.randomUUID();
+        JobFinishedMessage jobFinishedMessage = prepareFinishedMessage(jobId);
+        assertEquals(0, jobsRepository.count());
+
+        // when
+        finishedMessagesProducer.send(finishedTopic, jobId.toString(), jobFinishedMessage);
+        ArgumentCaptor<JobFinishedMessage> messageCaptor = ArgumentCaptor.forClass(JobFinishedMessage.class);
+        verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
+                .onJobFinishedMessage(messageCaptor.capture(), any());
+        verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
+                .report(any());
+
+        // then
+        JobFinishedMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+        assertEquals(jobId, message.getJobId());
+        assertEquals(0, jobsRepository.count());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = JobStatus.class, names = {"PENDING", "RUNNING"})
+    void onJobFinishedMessageForPendingOrRunningJob(JobStatus jobStatus) {
+        // given
+        Job job = prepareJob(jobStatus);
+        UUID jobId = job.getId();
+        JobFinishedMessage jobFinishedMessage = prepareFinishedMessage(jobId);
+
+        // when
+        finishedMessagesProducer.send(finishedTopic, jobId.toString(), jobFinishedMessage);
+        ArgumentCaptor<JobFinishedMessage> messageCaptor = ArgumentCaptor.forClass(JobFinishedMessage.class);
+        verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
+                .onJobFinishedMessage(messageCaptor.capture(), any());
+        verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
+                .report(any());
+
+        // then
+        Optional<Job> foundJobOptional = jobsRepository.findByIdFetchAll(jobId);
+        assertTrue(foundJobOptional.isPresent());
+        Job foundJob = foundJobOptional.get();
+        assertEquals(JobStatus.FINISHED, foundJob.getStatus());
+        JobResult foundJobResult = foundJob.getResult();
+        assertNotNull(foundJobResult);
+        assertEquals(JobResult.JobCompletionStatus.SUCCEEDED, foundJobResult.getFinishedWith());
+        assertEquals("some-stdout", foundJobResult.getStdout());
+        assertEquals("some-stderr", foundJobResult.getStderr());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = JobStatus.class, names = {"FINISHED", "REJECTED"})
+    void onJobFinishedMessageForFinishedOrRejectedJob(JobStatus jobStatus) {
+        // given
+        Job job = prepareJob(jobStatus);
+        UUID jobId = job.getId();
+        JobFinishedMessage jobFinishedMessage = prepareFinishedMessage(jobId);
+
+        // when
+        finishedMessagesProducer.send(finishedTopic, jobId.toString(), jobFinishedMessage);
+        ArgumentCaptor<JobFinishedMessage> messageCaptor = ArgumentCaptor.forClass(JobFinishedMessage.class);
+        verify(jobMessagesConsumerSpy, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
+                .onJobFinishedMessage(messageCaptor.capture(), any());
+        verify(jobMessageReporterMock, timeout(MESSAGE_WAITING_TIMEOUT_MS).times(1))
+                .report(any());
+
+        // then
+        Optional<Job> foundJobOptional = jobsRepository.findByIdFetchAll(jobId);
+        assertTrue(foundJobOptional.isPresent());
+        Job foundJob = foundJobOptional.get();
+        assertEquals(jobStatus, foundJob.getStatus());
+        assertNull(foundJob.getResult());
+    }
+
+    private JobFinishedMessage prepareFinishedMessage(UUID jobId) {
+        ScriptResults scriptResults = ScriptResults.builder()
+                .finishedWith(JobCompletionStatus.SUCCEEDED)
+                .stdout("some-stdout")
+                .stderr("some-stderr")
+                .build();
+
+        return JobFinishedMessage
+                .builder()
+                .jobId(jobId)
+                .status(com.naumov.dotnetscriptsscheduler.dto.kafka.cons.JobStatus.ACCEPTED)
+                .scriptResults(scriptResults)
+                .build();
     }
 
     private Job prepareJob(JobStatus jobStatus) {

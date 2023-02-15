@@ -21,6 +21,7 @@ public interface JobsRepository extends JpaRepository<Job, UUID> {
 
     Optional<Job> findByRequestMessageId(String messageId);
 
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     @Query("FROM Job j " +
             "LEFT JOIN FETCH j.request " +
             "LEFT JOIN FETCH j.request.payload " +

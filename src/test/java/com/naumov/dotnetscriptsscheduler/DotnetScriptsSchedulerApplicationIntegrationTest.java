@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @DirtiesContext
 @AutoConfigureMockMvc
-class DotnetScriptsSchedulerApplicationTest extends AbstractIntegrationTest {
+class DotnetScriptsSchedulerApplicationIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mvc;
 
