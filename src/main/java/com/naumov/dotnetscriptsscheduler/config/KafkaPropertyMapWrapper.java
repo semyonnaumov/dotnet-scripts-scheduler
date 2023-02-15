@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Simple map wrapper, used to mitigate spring {@code Map<String, Object>} injection problems.
  */
-public class CommonConsumerPropertiesWrapper {
+public class KafkaPropertyMapWrapper {
     private final Map<String, Object> props = new HashMap<>();
 
     public void put(String key, Object value) {

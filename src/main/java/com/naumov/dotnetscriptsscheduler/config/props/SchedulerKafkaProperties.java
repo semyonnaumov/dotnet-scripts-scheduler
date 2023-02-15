@@ -31,4 +31,6 @@ public class SchedulerKafkaProperties {
     private String producerAcks;
     @NotBlank
     private String consumerGroup;
+    @NotBlank
+    private String autoOffsetReset = "latest";
 }

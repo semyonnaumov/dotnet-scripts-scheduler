@@ -40,13 +40,14 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public CommonConsumerPropertiesWrapper commonConsumerProperties() {
-        var props = new CommonConsumerPropertiesWrapper();
+    public KafkaPropertyMapWrapper commonConsumerProperties() {
+        var props = new KafkaPropertyMapWrapper();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBrokerUrl());
         props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getConsumerGroup());
         props.put(ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG, kafkaProperties.getReconnectBackoffMs());
         props.put(ConsumerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, kafkaProperties.getReconnectBackoffMaxMs());
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, kafkaProperties.getAutoOffsetReset());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
@@ -58,7 +59,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
 
     @Bean
     public ConsumerFactory<String, JobStartedMessage> jobStartedMessagesConsumerFactory() {
-        CommonConsumerPropertiesWrapper props = commonConsumerProperties();
+        KafkaPropertyMapWrapper props = commonConsumerProperties();
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobStartedMessage.class.getName());
 
         return new DefaultKafkaConsumerFactory<>(props.toMap());
@@ -66,7 +67,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
 
     @Bean
     public ConsumerFactory<String, JobFinishedMessage> jobFinishedMessagesConsumerFactory() {
-        CommonConsumerPropertiesWrapper props = commonConsumerProperties();
+        KafkaPropertyMapWrapper props = commonConsumerProperties();
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobFinishedMessage.class.getName());
 
         return new DefaultKafkaConsumerFactory<>(props.toMap());

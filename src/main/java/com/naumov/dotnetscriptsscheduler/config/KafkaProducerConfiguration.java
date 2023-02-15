@@ -5,14 +5,14 @@ import com.naumov.dotnetscriptsscheduler.dto.kafka.prod.JobTaskMessage;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-
-import java.util.HashMap;
 
 @Configuration
 public class KafkaProducerConfiguration {
@@ -24,8 +24,9 @@ public class KafkaProducerConfiguration {
     }
 
     @Bean
-    public ProducerFactory<String, JobTaskMessage> jobTaskMessageProducerFactory() {
-        var props = new HashMap<String, Object>();
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public KafkaPropertyMapWrapper commonProducerProperties() {
+        var props = new KafkaPropertyMapWrapper();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBrokerUrl());
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
@@ -33,7 +34,12 @@ public class KafkaProducerConfiguration {
         props.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, kafkaProperties.getReconnectBackoffMs());
         props.put(ProducerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, kafkaProperties.getReconnectBackoffMaxMs());
 
-        var producerFactory = new DefaultKafkaProducerFactory<String, JobTaskMessage>(props);
+        return props;
+    }
+
+    @Bean
+    public ProducerFactory<String, JobTaskMessage> jobTaskMessageProducerFactory() {
+        var producerFactory = new DefaultKafkaProducerFactory<String, JobTaskMessage>(commonProducerProperties().toMap());
         producerFactory.setProducerPerThread(true);
 
         return producerFactory;
