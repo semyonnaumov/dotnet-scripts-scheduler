@@ -21,7 +21,7 @@ public abstract class AbstractIntegrationTest {
             new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.0"));
 
     @DynamicPropertySource
-    public static void setupDatasourceProperties(DynamicPropertyRegistry registry) {
+    public static void overrideProperties(DynamicPropertyRegistry registry) {
         Startables.deepStart(postgres, kafka);
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
