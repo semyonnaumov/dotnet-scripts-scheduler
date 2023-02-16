@@ -43,7 +43,6 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
     public KafkaPropertyMapWrapper commonConsumerProperties() {
         var props = new KafkaPropertyMapWrapper();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBrokerUrl());
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getConsumerGroup());
         props.put(ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG, kafkaProperties.getReconnectBackoffMs());
         props.put(ConsumerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, kafkaProperties.getReconnectBackoffMaxMs());
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
@@ -60,6 +59,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
     @Bean
     public ConsumerFactory<String, JobStartedMessage> jobStartedMessagesConsumerFactory() {
         KafkaPropertyMapWrapper props = commonConsumerProperties();
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getConsumerGroup());
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobStartedMessage.class.getName());
 
         return new DefaultKafkaConsumerFactory<>(props.toMap());
@@ -68,6 +68,7 @@ public class KafkaConsumersConfiguration implements KafkaListenerConfigurer {
     @Bean
     public ConsumerFactory<String, JobFinishedMessage> jobFinishedMessagesConsumerFactory() {
         KafkaPropertyMapWrapper props = commonConsumerProperties();
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getConsumerGroup());
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, JobFinishedMessage.class.getName());
 
         return new DefaultKafkaConsumerFactory<>(props.toMap());
