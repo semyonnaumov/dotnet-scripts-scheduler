@@ -70,6 +70,7 @@ class JobMessagesProducerTest {
                 .build();
 
         jobMessagesProducer.sendJobTaskMessageAsync(job);
+
         verify(workerTypesServiceMock, times(1)).workerExists(eq(workerType));
         verify(schedulerKafkaPropertiesMock, times(1)).getJobsTopicPrefix();
         ArgumentCaptor<JobTaskMessage> argumentCaptor = ArgumentCaptor.forClass(JobTaskMessage.class);
