@@ -132,19 +132,19 @@ docker exec -it dss-kafka-broker-1 sh
 
 ```bash
 kafka-console-consumer --bootstrap-server localhost:9092 \
-	--topic pending-linux-amd64-dotnet-7 --from-beginning --group console
+    --topic pending-linux-amd64-dotnet-7 --from-beginning --group console
 ```
 
 Чтобы отправлять сообщения приложению можно подключиться к топикам `running` или `finished`:
 
 ```bash
 kafka-console-producer --bootstrap-server localhost:9092 \
-	--topic running --property "parse.key=true" --property "key.separator=:"
+    --topic running --property "parse.key=true" --property "key.separator=:"
 ```
 
 ```bash
 kafka-console-producer --bootstrap-server localhost:9092 \
-	--topic finished --property "parse.key=true" --property "key.separator=:"
+    --topic finished --property "parse.key=true" --property "key.separator=:"
 ```
 
 В качестве ключа для отправки можно использовать что угодно, ключ не читается приложением, но используется кафкой для
