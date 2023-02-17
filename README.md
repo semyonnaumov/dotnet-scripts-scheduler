@@ -68,6 +68,7 @@ docker build -t dotnet-scripts-scheduler:latest .
 ```bash
 docker run --name dotnet-scripts-scheduler \
     --network=dotnet-scripts-scheduler_dss-network -it --rm \
+    -p 8080:8080 \
     -e SCHEDULER_POSTGRES_URL=postgres:5432 \
     -e SCHEDULER_KAFKA_BROKER_URL=kafka-broker-1:9092 \
     dotnet-scripts-scheduler:latest
