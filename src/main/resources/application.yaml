@@ -11,6 +11,7 @@ scheduler:
     finished-topic-name: finished
     producer-acks: 1
     consumer-group: schedulers
+    auto-offset-reset: earliest
   kafka-admin:
     broker-url: ${scheduler.kafka.broker-url}
     reconnect-backoff-ms: ${scheduler.kafka.reconnect-backoff-ms}
